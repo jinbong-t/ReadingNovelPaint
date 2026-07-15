@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="stage.css">
+  <style>
+    .puzzle-section {
+      background: rgba(0,0,0,0.3);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+    .puzzle-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #f59e0b;
+    }
+    
+    /* Clock */
+    .clock-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border: 4px solid #d97706;
+      border-radius: 50%;
+      margin: 0 auto 20px auto;
+      background: rgba(255,255,255,0.05);
+    }
+    .clock-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      background: #d97706;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .clock-label {
+      position: absolute;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #fcd34d;
+      transform: translate(-50%, -50%);
+    }
+    
+    .memo-card {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 15px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.2rem;
+      text-align: center;
+      border-radius: 4px;
+      transform: rotate(-2deg);
+      width: 80%;
+      margin: 0 auto 20px auto;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .code-input {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid #f59e0b;
+      color: white;
+      padding: 10px;
+      font-size: 1.2rem;
+      width: 150px;
+      text-align: center;
+      border-radius: 8px;
+      text-transform: uppercase;
+    }
+    
+    .hint-box {
+      margin-top: 15px;
+      color: #fcd34d;
+      font-size: 0.9rem;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    /* Dial part */
+    .dial-section {
+      display: none;
+      animation: fadeIn 1s;
+    }
+    
+    .dial-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .dial-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    
+    .dial-item.selected {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #f59e0b;
+    }
+
+    /* Choice part */
+    .choice-section {
+      display: none;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid #f59e0b;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      animation: fadeIn 1s;
+    }
+    
+    .choice-btn {
+      display: block;
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 1.1rem;
+      transition: 0.2s;
+    }
+    .choice-btn:hover { background: rgba(255,255,255,0.15); }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 15px;
+      border: 1px solid #f59e0b;
+      text-align: center;
+      max-width: 400px;
+    }
+  </script>
+</head>
+<body>
+  <div class="stage-container">
+    <div class="narration-box" id="intro-narr">
+      "요 며칠 박 선생님(센터장)이 이상했어. 평소와 다르게 말수가 줄고, 갑자기 휴가를 냈어... 사실은 전혀 다른 이야기가 있었어."<br><br>
+      결 선생님의 부탁으로 박 선생님 사무실에 들어갔어. 벽에 낡은 시계가 걸려 있는데, 숫자가 아니라 알파벳이 적혀 있어. 서랍에서 손글씨 메모도 발견했지.
+    </div>
+
+    <!-- Puzzle 1: Clock -->
+    <div class="puzzle-section" id="puzzle1">
+      <div class="puzzle-title">트릭 퍼즐. 박 선생님의 시계</div>
+      
+      <div class="clock-container" id="clock">
+        <div class="clock-center"></div>
+      </div>
+      
+      <div class="memo-card">
+        [병문안 기록]<br>
+        3:00 / 7:00 / 5:00 / 12:00 / 3:00
+      </div>
+      
+      <div class="input-group">
+        <input type="text" class="code-input" id="code-input" placeholder="암호 입력" maxlength="10">
+        <button class="btn" id="check-code-btn" style="margin-top:0;">확인</button>
+      </div>
+      
+      <div class="hint-box" id="hint-box"></div>
+    </div>
+
+    <!-- Puzzle 2: Dial (Appears after Puzzle 1) -->
+    <div class="puzzle-section dial-section" id="puzzle2">
+      <div class="narration-box" style="background: rgba(0,0,0,0.5); margin-bottom:15px; border-color:#f59e0b; font-size:1rem;">
+        "이건 박 선생님이 병원에 다녀온 시간을 적어둔 기록이었어. TRUST — 믿는다는 것. 그가 스스로에게 남긴 말이었는지도 몰라."<br><br>
+        박 선생님은 사실 어린 시절 아버지로부터 힘든 시간을 겪으며 자랐어. 지금은 편찮으신 아버지를 만나러 떠난 거였고. 이런 사람에게, 그리고 비슷한 상황의 누군가에게 필요한 건 무엇일까?
+      </div>
+      
+      <div class="puzzle-title">다이얼 코드 (필요한 행동 3가지를 선택하세요)</div>
+      <div class="dial-items">
+        <div class="dial-item" data-val="1">① 이야기할 기회를 조용히 준다</div>
+        <div class="dial-item" data-val="2">② 그의 가정사니 참견하지 않는다</div>
+        <div class="dial-item" data-val="3">③ 믿을 수 있는 사람이나 기관에 연결한다</div>
+        <div class="dial-item" data-val="4">④ 소문내지 않고 주변에 함부로 말하지 않는다</div>
+      </div>
+      
+      <button class="btn" id="open-dial-btn" style="width:100%;">자물쇠 열기</button>
+    </div>
+
+    <!-- Choice Section -->
+    <div class="choice-section" id="choiceSection">
+      <div class="puzzle-title">선택의 순간</div>
+      <button class="choice-btn" onclick="makeChoice('A')">A. 직접 곁에서 이야기를 들어준다</button>
+      <button class="choice-btn" onclick="makeChoice('B')">B. 믿을 수 있는 어른에게 먼저 알린다</button>
+      <button class="choice-btn" onclick="makeChoice('C')">C. 조용히 지켜만 본다</button>
+    </div>
+  </div>
+
+  <!-- Modal for Counseling -->
+  <div class="modal" id="counselModal">
+    <div class="modal-content">
+      <h2 style="color:#f59e0b; margin-bottom:15px;">자물쇠가 열렸습니다!</h2>
+      <p style="margin-bottom:20px; line-height:1.6;">가정폭력 등 도움이 필요할 때는 주저하지 말고 연락하세요.</p>
+      <div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:8px; margin-bottom:20px;">
+        여성긴급전화: <strong>1366</strong><br>
+        청소년상담전화: <strong>1388</strong><br>
+        경찰: <strong>112</strong>
+      </div>
+      <button class="btn" onclick="closeModal()">확인</button>
+    </div>
+  </div>
+
+  <script>
+    // Clock setup
+    const clockLabels = {
+      1:'M', 2:'K', 3:'T', 4:'B', 5:'U', 6:'D', 
+      7:'R', 8:'F', 9:'Q', 10:'E', 11:'X', 12:'S'
+    };
+    const clock = document.getElementById('clock');
+    
+    for (let i = 1; i <= 12; i++) {
+      const el = document.createElement('div');
+      el.className = 'clock-label';
+      el.innerText = clockLabels[i];
+      // calculate position (12 is top, 3 is right, 6 is bottom, 9 is left)
+      const angle = (i * 30 - 90) * (Math.PI / 180);
+      const radius = 80;
+      const x = 100 + radius * Math.cos(angle);
+      const y = 100 + radius * Math.sin(angle);
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      clock.appendChild(el);
+    }
+
+    // Hint system (30s intervals for demo, originally 1m/2m/3m)
+    const hintBox = document.getElementById('hint-box');
+    const hints = [
+      "1분 경과: 이 시계, 뭔가 이상하지 않아?",
+      "2분 경과: 메모의 숫자는 시각이 아니라 위치일 수도 있어.",
+      "3분 경과: 첫 글자는 'T'야."
+    ];
+    let timeElapsed = 0;
+    const hintTimer = setInterval(() => {
+      timeElapsed++;
+      if (timeElapsed === 30) hintBox.innerText = hints[0]; // 30s
+      if (timeElapsed === 60) hintBox.innerText = hints[1]; // 60s
+      if (timeElapsed === 90) { // 90s
+        hintBox.innerText = hints[2];
+        clearInterval(hintTimer);
+      }
+    }, 1000);
+
+    // Code Check
+    document.getElementById('check-code-btn').addEventListener('click', () => {
+      const input = document.getElementById('code-input').value.toUpperCase().trim();
+      if (input === 'TRUST') {
+        clearInterval(hintTimer);
+        document.getElementById('puzzle1').style.opacity = 0.5;
+        document.getElementById('puzzle1').style.pointerEvents = 'none';
+        document.getElementById('puzzle2').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      } else {
+        const btn = document.getElementById('check-code-btn');
+        btn.style.background = '#ef4444';
+        setTimeout(() => { btn.style.background = ''; }, 500);
+      }
+    });
+
+    // Dial Check
+    let selectedDial = [];
+    const dialItems = document.querySelectorAll('.dial-item');
+    dialItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const val = item.dataset.val;
+        if (selectedDial.includes(val)) {
+          selectedDial = selectedDial.filter(v => v !== val);
+          item.classList.remove('selected');
+        } else {
+          selectedDial.push(val);
+          item.classList.add('selected');
+        }
+      });
+    });
+
+    document.getElementById('open-dial-btn').addEventListener('click', () => {
+      // Correct is 1, 3, 4
+      if (selectedDial.length === 3 && selectedDial.includes('1') && selectedDial.includes('3') && selectedDial.includes('4')) {
+        document.getElementById('counselModal').style.display = 'flex';
+      } else {
+        const btn = document.getElementById('open-dial-btn');
+        btn.style.background = '#ef4444';
+        btn.innerText = '비밀번호가 틀렸습니다.';
+        setTimeout(() => { btn.style.background = ''; btn.innerText = '자물쇠 열기'; }, 1000);
+      }
+    });
+
+    function closeModal() {
+      document.getElementById('counselModal').style.display = 'none';
+      document.getElementById('puzzle2').style.opacity = 0.5;
+      document.getElementById('puzzle2').style.pointerEvents = 'none';
+      document.getElementById('choiceSection').style.display = 'block';
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Final Choice
+    function makeChoice(opt) {
+      if(window.parent && window.parent.updateStats) {
+        if(opt === 'A') {
+          window.parent.updateStats(0, 0, 2);
+        } else if(opt === 'B') {
+          window.parent.updateStats(1, 0, 2);
+        } else if(opt === 'C') {
+          window.parent.updateStats(0, 0, -1);
+        }
+        window.parent.loadStage(5);
+      } else {
+        window.location.href = '5.html';
+      }
+    }
+  </script>
+</body>
+</html>

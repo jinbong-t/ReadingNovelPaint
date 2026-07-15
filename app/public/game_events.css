@@ -1,0 +1,436 @@
+/* ── 모달 오버레이 ── */
+#event-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.3s;
+}
+#event-modal.show { display: flex; opacity: 1; }
+
+/* ── 퍼즐 공통 ── */
+.puzzle-wrap {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px; padding: 16px;
+}
+.puzzle-title {
+  font-size: 0.82rem; font-weight: 700; color: #fbbf24; margin-bottom: 10px;
+}
+
+/* ── 버튼들 ── */
+.btn-choice {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: clamp(8px,1.5vh,12px) clamp(12px,2vw,16px);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: clamp(0.8rem, 1.4vw, 0.9rem);
+  text-align: left; cursor: pointer;
+  transition: all 0.2s; line-height: 1.5;
+}
+.btn-choice:hover { background: rgba(99,102,241,0.25); border-color: #6366f1; transform: translateX(3px); }
+.btn-action {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border: none; color: white; padding: 14px;
+  border-radius: 99px; font-weight: 700; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: center; font-size: 1rem; width: 100%; margin-top: 10px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.btn-action:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }
+
+/* ── 예비부모 카드 (Stage 1) ── */
+.parent-card {
+  flex: 1;
+  min-width: 90px;
+  max-width: 140px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  transition: all 0.25s;
+  background: rgba(0,0,0,0.3);
+}
+.parent-card:hover {
+  border-color: #a855f7;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(168,85,247,0.4);
+}
+.parent-card.selected-card {
+  border-color: #34d399;
+  box-shadow: 0 0 20px rgba(52,211,153,0.5);
+  transform: translateY(-4px) scale(1.03);
+}
+.parent-card img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.parent-label {
+  font-size: 0.7rem; font-weight: 700;
+  color: #fbbf24; padding: 6px 4px 2px;
+}
+.parent-desc {
+  font-size: 0.62rem; color: rgba(255,255,255,0.5);
+  padding: 0 6px 8px; line-height: 1.4; word-break: keep-all;
+}
+
+/* ── 시계 퍼즐 UI ── */
+.clock-puzzle {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  border: 3px solid #a855f7;
+  margin: 16px auto;
+  background: radial-gradient(circle, rgba(99,102,241,0.15), rgba(0,0,0,0.7));
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 20px rgba(168,85,247,0.3);
+}
+.clock-num {
+  position: absolute;
+  width: 38px; height: 38px;
+  left: 50%; top: 50%;
+  margin-left: -19px; margin-top: -19px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.15s;
+  background: rgba(255,255,255,0.07);
+  user-select: none;
+}
+.clock-num:hover, .clock-num:active {
+  background: rgba(168,85,247,0.6) !important;
+  transform: scale(1.25) !important;
+}
+.clock-digit { font-size: 1rem; font-weight: 900; color: white; line-height: 1; }
+.clock-letters { font-size: 0.5rem; color: #fbbf24; font-weight: bold; letter-spacing: 0.5px; }
+
+/* ── 박선생님 메모 ── */
+.memo-paper {
+  background: linear-gradient(135deg, #fef9c3, #fef3c7);
+  color: #333;
+  padding: 14px 16px;
+  border-radius: 4px;
+  transform: rotate(-1.5deg);
+  box-shadow: 3px 3px 12px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.05);
+  margin-bottom: 16px;
+  font-family: 'Comic Sans MS', '나눔손글씨', cursive;
+  position: relative;
+}
+.memo-paper::before {
+  content: '';
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fbbf24; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ── 엔딩 화면 ── */
+#s-ending {
+  flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  z-index: 500; overflow-y: auto; padding: 20px;
+  transition: background 0.8s ease;
+}
+.ending-emoji { font-size: 4rem; margin-bottom: 12px; animation: fadeUp 1s both; }
+.ending-title { font-size: 2rem; font-weight: 900; margin-bottom: 12px; animation: fadeUp 1s 0.2s both; }
+.ending-text { font-size: 1rem; color: rgba(255,255,255,0.8); max-width: 480px; line-height: 1.7; margin-bottom: 24px; animation: fadeUp 1s 0.4s both; word-break: keep-all; }
+.ending-stats-box { display: flex; gap: 20px; background: rgba(255,255,255,0.08); padding: 16px 32px; border-radius: 20px; animation: fadeUp 1s 0.6s both; }
+.ending-stat { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.ending-stat-val { font-size: 1.8rem; font-weight: 900; }
+.ending-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+
+/* ── 엔딩 CG (CSS 아트) ── */
+.ending-cg {
+  width: 100%; max-width: 480px;
+  margin: 0 auto 8px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  min-height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeUp 1s both;
+}
+
+/* 새가족 엔딩 CG */
+.trust-cg {
+  background: linear-gradient(to bottom, #0ea5e9, #7dd3fc, #fbbf24);
+  flex-direction: column; gap: 8px; padding: 20px;
+}
+.cg-house { font-size: 3rem; }
+.cg-family { display: flex; align-items: flex-end; gap: 16px; justify-content: center; }
+.cg-jenu-lg {
+  background: rgba(255,255,255,0.3); border: 3px solid white;
+  border-radius: 12px; padding: 10px 16px; font-weight: 900; font-size: 1.1rem;
+}
+.cg-person.sm {
+  background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 10px; padding: 8px 12px; font-size: 0.9rem;
+}
+
+/* 자립 엔딩 CG */
+.indep-cg {
+  background: linear-gradient(to bottom, #1e1b4b, #4c1d95);
+  flex-direction: column; gap: 12px; padding: 20px;
+}
+.cg-door { font-size: 3.5rem; }
+.cg-jenu-back {
+  font-size: 1.2rem; font-weight: 900;
+  color: rgba(255,255,255,0.8); letter-spacing: 4px;
+}
+
+/* 연대 엔딩 CG */
+.comm-cg {
+  background: linear-gradient(to bottom, #022c22, #065f46);
+  padding: 20px;
+}
+.cg-circle {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
+}
+.cg-circle .cg-person {
+  background: rgba(52,211,153,0.2); border: 2px solid #34d399;
+  border-radius: 50%; width: 60px; height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.75rem;
+}
+
+/* 균형 엔딩 CG */
+.balanced-cg {
+  background: linear-gradient(135deg, #1e1b4b, #4c1d95, #2e1065);
+  flex-direction: column; gap: 12px; padding: 20px;
+}
+.cg-jenu {
+  background: rgba(192,132,252,0.3); border: 3px solid #c084fc;
+  border-radius: 50%; width: 70px; height: 70px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 1rem; margin: 0 auto;
+}
+.cg-people { display: flex; gap: 16px; justify-content: center; }
+.cg-person.left { background: rgba(56,189,248,0.2); border: 2px solid #38bdf8; border-radius: 10px; padding: 8px 14px; }
+.cg-person.right { background: rgba(52,211,153,0.2); border: 2px solid #34d399; border-radius: 10px; padding: 8px 14px; }
+
+.cg-text-overlay {
+  font-size: 0.75rem; color: rgba(255,255,255,0.5);
+  letter-spacing: 2px; margin-top: 4px;
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── 방문 열리는 트랜지션 ── */
+#door-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.door-frame {
+  position: relative; width: 100%; height: 100%;
+  display: flex; overflow: hidden;
+}
+.door-half {
+  position: absolute; top: 0; bottom: 0;
+  width: 50%;
+  background: linear-gradient(135deg, #1a0e30, #0d0720);
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(168,85,247,0.3);
+}
+.door-left  { left: 0; transform-origin: left center; }
+.door-right { right: 0; transform-origin: right center; }
+.door-open .door-left  { transform: perspective(800px) rotateY(-85deg); }
+.door-open .door-right { transform: perspective(800px) rotateY(85deg); }
+.door-text {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 2rem; color: rgba(255,255,255,0.6); letter-spacing: 6px;
+  font-family: 'Noto Sans KR', sans-serif; pointer-events: none;
+  animation: doorTextFade 1s ease forwards;
+  z-index: 10;
+}
+@keyframes doorTextFade { 0%{opacity:1} 80%{opacity:0.8} 100%{opacity:0} }
+.sfx-text { color: #a78bfa; font-style: italic; }
+
+/* ── 선생님 방 레이아웃 ── */
+.teacher-room-layout {
+  display: flex; gap: 24px; align-items: center; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 10px;
+}
+.room-memo-area { width: 160px; flex-shrink: 0; margin-top: 16px; }
+.room-clock-area { width: 220px; text-align: center; flex-shrink: 0; }
+.clock-area-label {
+  font-size: 0.75rem; color: #fbbf24; font-weight: 700; margin-bottom: 8px;
+}
+
+/* ── 알파벳 시계 ── */
+.alpha-clock-container {
+  width: 210px; height: 210px;
+  margin: 0 auto 10px;
+  position: relative;
+}
+.clock-face {
+  position: relative; width: 100%; height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #2d1b69, #0d0720 70%);
+  border: 3px solid rgba(168,85,247,0.6);
+  box-shadow: 0 0 30px rgba(168,85,247,0.3), inset 0 0 20px rgba(0,0,0,0.8);
+}
+/* 눈금 */
+.tick {
+  position: absolute; top: 0; left: 50%;
+  width: 1px; height: 100%;
+  transform-origin: center center;
+}
+.tick::before {
+  content: '';
+  position: absolute; top: 4px; left: -0.5px;
+  width: 1px; height: 5px;
+  background: rgba(255,255,255,0.15);
+}
+.tick.tick-hour::before {
+  width: 2px; height: 9px;
+  background: rgba(168,85,247,0.5);
+  top: 3px;
+}
+/* 알파벳 숫자 */
+.alpha-num {
+  position: absolute;
+  width: 34px; height: 34px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s;
+  user-select: none;
+}
+.alpha-num:hover { background: rgba(168,85,247,0.5); border-color: #a855f7; transform: translate(-50%,-50%) scale(1.2) !important; }
+.alpha-num.alpha-clicked { background: rgba(251,191,36,0.7) !important; border-color: #fbbf24 !important; transform: translate(-50%,-50%) scale(1.3) !important; }
+.a-letter { font-size: 1rem; font-weight: 900; color: white; line-height: 1; }
+.a-pos { font-size: 0.45rem; color: #fbbf24; margin-top: 1px; }
+/* 시계 바늘 (장식) */
+.clock-hand {
+  position: absolute; bottom: 50%; left: 50%;
+  transform-origin: bottom center;
+  border-radius: 3px;
+}
+.hour-hand {
+  width: 3px; height: 30%; margin-left: -1.5px;
+  background: rgba(255,255,255,0.8);
+  transform: rotate(120deg);
+}
+.min-hand {
+  width: 2px; height: 40%; margin-left: -1px;
+  background: rgba(168,85,247,0.9);
+  transform: rotate(240deg);
+}
+.clock-center-dot {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #a855f7; box-shadow: 0 0 8px rgba(168,85,247,0.8);
+}
+/* 답 표시줄 */
+.clock-answer-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin: 6px 0 4px;
+}
+.answer-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+.alpha-display {
+  font-size: clamp(1rem, 1.8vw, 1.4rem); font-weight: 900; color: #fbbf24;
+  letter-spacing: clamp(2px, 1vw, 6px); min-width: 120px; text-align: center;
+  white-space: nowrap;
+}
+.alpha-reset-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  color: #aaa; width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+  transition: 0.2s;
+}
+.alpha-reset-btn:hover { background: rgba(239,68,68,0.3); color: #ef4444; border-color: #ef4444; }
+.p6-feedback { font-size: clamp(0.7rem, 1.5vw, 0.82rem); font-weight: 700; min-height: 18px; margin-top: 4px; text-align: center; white-space: nowrap; }
+.p6-feedback.correct { color: #34d399; }
+.p6-feedback.wrong { color: #ef4444; }
+
+/* ── 예비부모 선택 카드 (스테이지 1) ── */
+.parent-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 10px;
+  width: calc(33.33% - 10px); min-width: 80px;
+  text-align: center; cursor: pointer; transition: 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.parent-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-3px); }
+.parent-card.selected-card { border-color: #a855f7; background: rgba(168,85,247,0.2); }
+.parent-card img { width: 100%; max-width: 70px; aspect-ratio: 1; border-radius: 8px; object-fit: cover; }
+.parent-label { font-size: clamp(0.65rem, 1.5vw, 0.85rem); font-weight: 700; color: #fbbf24; word-break: keep-all; }
+.parent-desc { font-size: clamp(0.55rem, 1.2vw, 0.7rem); color: rgba(255,255,255,0.7); line-height: 1.3; word-break: keep-all; }
+
+@media (max-width: 480px) {
+  .parent-card { width: calc(50% - 6px); }
+}
+
+/* ── 벽 메모 (병문안 기록) ── */
+.wall-memo-note {
+  background: linear-gradient(170deg, #fffde7, #fff9c4);
+  color: #222;
+  border-radius: 2px;
+  padding: 12px 12px 14px;
+  position: relative;
+  box-shadow: 3px 4px 14px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0,0,0,0.07);
+  transform: rotate(1.5deg);
+  font-family: 'Comic Sans MS', '나눔손글씨 펜', cursive;
+}
+.wall-memo-pin {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  font-size: 1.1rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+}
+.wall-memo-title {
+  font-size: 0.9rem; font-weight: 900; text-align: center;
+  margin-top: 4px; margin-bottom: 5px; letter-spacing: 1px;
+  border-bottom: 2px solid rgba(0,0,0,0.2); padding-bottom: 5px;
+}
+.wall-memo-body { display: flex; flex-direction: column; gap: 4px; }
+.hw-line { font-size: 0.72rem; color: #333; line-height: 1.5; }
+.hw-highlight { color: #b45309; font-weight: 700; font-size: 0.75rem; margin-top: 4px; }
+.hw-times {
+  font-size: 1rem; font-weight: 900; color: #7c3aed;
+  letter-spacing: 1px; text-align: center;
+  margin: 4px 0; padding: 4px 6px;
+  background: rgba(124,58,237,0.1); border-radius: 4px;
+}
+.hw-small { font-size: 0.6rem; color: #666; line-height: 1.4; }
+
+/* ── 박 선생님 방 배경 ── */
+.teacher-room-bg {
+  background: 
+    linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.85)),
+    url('teacher_room.png') no-repeat center center / cover !important;
+}
+.teacher-room-bg::before, .teacher-room-bg::after {
+  display: none !important;
+}
+
+/* ── 엔딩 소감 폼 ── */
+.ending-form {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 10px;
+  background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.ending-input, .ending-textarea {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+  padding: 10px; color: white; font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.9rem;
+}
+.ending-input::placeholder, .ending-textarea::placeholder { color: rgba(255,255,255,0.4); }
+.ending-input:focus, .ending-textarea:focus { outline: none; border-color: #a855f7; background: rgba(255,255,255,0.1); }
+.ending-textarea { resize: vertical; min-height: 80px; }
+.btn-submit {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white; border: none; padding: 12px; border-radius: 8px;
+  font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem;
+}
+.btn-submit:hover { filter: brightness(1.1); transform: translateY(-2px); }

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NC센터: 나의 선택</title>
+  <meta name="description" content="소설 『페인트』 연계 인생게임형 수업 활동">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/game_events.css?v=6">
+  <style>
+    /* ── 리셋 & 베이스 ── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --trust : #38bdf8;
+      --indep : #c084fc;
+      --comm  : #34d399;
+      --gold  : #fbbf24;
+      --purple: #6366f1;
+      --dark  : #0d1117;
+      --dark2 : #161b24;
+      --dark3 : #1e2736;
+      --text  : rgba(255,255,255,0.92);
+      --muted : rgba(255,255,255,0.45);
+      --border: rgba(255,255,255,0.09);
+    }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #000;
+      color: var(--text);
+    }
+
+    /* ── 화면 시스템 ── */
+    .screen {
+      position: fixed; inset: 0;
+      display: none; opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .screen.show { display: flex; }
+    .screen.visible { opacity: 1; }
+
+    /* ── 블랙아웃 레이어 ── */
+    #blackout {
+      position: fixed; inset: 0;
+      background: #000; z-index: 9999;
+      pointer-events: none; opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #blackout.on { opacity: 1; pointer-events: all; }
+
+    /* ════════════════════════════
+       1. 인트로 화면
+    ════════════════════════════ */
+    #s-intro {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .intro-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(circle at 50% 120%, #16003a 0%, #0d0221 40%, #000000 100%);
+      animation: spaceBreathe 15s ease-in-out infinite alternate;
+    }
+    @keyframes spaceBreathe {
+      from { filter: brightness(1); }
+      to { filter: brightness(1.3); }
+    }
+
+    .intro-particles { position:absolute; inset:0; z-index:1; pointer-events:none; }
+    .intro-particles span {
+      position:absolute;
+      border-radius:50%;
+      background:rgba(255,255,255,0.5);
+      animation: particleRise linear infinite;
+    }
+    @keyframes particleRise {
+      0%   { transform:translateY(100vh) scale(0); opacity:0; }
+      10%  { opacity:1; }
+      90%  { opacity:0.3; }
+      100% { transform:translateY(-5vh)  scale(1); opacity:0; }
+    }
+
+    .intro-body {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      gap: clamp(14px, 2.5vh, 26px);
+      padding: clamp(20px, 4vw, 60px);
+      width: 100%; max-width: 700px;
+      animation: fadeUp 1s ease both;
+    }
+    .intro-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(10px);
+      padding: clamp(5px,1vh,8px) clamp(14px,2vw,22px);
+      border-radius: 99px;
+      font-size: clamp(0.72rem, 1.5vw, 0.85rem);
+      color: var(--muted); letter-spacing: 0.06em;
+    }
+    .intro-badge-dot {
+      width:6px; height:6px; border-radius:50%;
+      background: #a78bfa;
+      animation: blink 2s ease-in-out infinite;
+    }
+    .intro-subtitle {
+      font-size: clamp(0.7rem, 1.5vw, 0.88rem);
+      letter-spacing: 0.35em; color: var(--muted);
+      text-transform: uppercase;
+    }
+    .intro-title {
+      font-size: clamp(2.8rem, 9vw, 6rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+    }
+    .intro-title .grad {
+      background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 0.55em; display: block;
+      letter-spacing: 0.04em;
+    }
+    .intro-desc {
+      font-size: clamp(0.85rem, 1.8vw, 1rem);
+      color: var(--muted); line-height: 1.85;
+      font-weight: 300;
+      word-break: keep-all;
+    }
+    .intro-desc strong { color: rgba(255,255,255,0.85); font-weight:700; }
+    .intro-btn {
+      background: #fff; color: #16003a;
+      border: none; cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+      font-weight: 700; letter-spacing: 0.04em;
+      padding: clamp(13px,2vh,18px) clamp(32px,5vw,56px);
+      border-radius: 99px;
+      transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 0 0 0 rgba(167,139,250,0);
+    }
+    .intro-btn:hover {
+      transform: scale(1.07);
+      box-shadow: 0 0 40px rgba(167,139,250,0.55), 0 16px 40px rgba(0,0,0,0.4);
+    }
+    .intro-side-text {
+      position: absolute; z-index: 10;
+      left: clamp(14px,2vw,36px); top:50%;
+      transform: translateY(-50%) rotate(-90deg);
+      font-size: clamp(0.6rem, 1vw, 0.7rem);
+      letter-spacing: 0.2em; color: rgba(255,255,255,0.18);
+      white-space: nowrap;
+    }
+    .intro-corner {
+      position: absolute; z-index: 10;
+      bottom: clamp(16px,3vh,32px); right: clamp(16px,3vw,40px);
+      font-size: clamp(0.6rem, 1vw, 0.72rem);
+      color: rgba(255,255,255,0.18); letter-spacing: 0.1em;
+    }
+
+    /* ════════════════════════════
+       2. 스토리 화면
+    ════════════════════════════ */
+    #s-story {
+      flex-direction: column;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .story-bg {
+      position: absolute; inset: 0; z-index: 0;
+    }
+    .story-bg img {
+      width:100%; height:100%;
+      object-fit: cover;
+      transition: opacity 0.8s ease, filter 1s ease, transform 8s ease;
+    }
+    /* 오버레이: 위쪽은 거의 투명, 하단 내레이션 박스 뒤만 어둡게 */
+    .story-bg::after {
+      content:'';
+      position:absolute; inset:0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.05) 0%,
+        rgba(0,0,0,0.0)  30%,
+        rgba(0,0,0,0.45) 58%,
+        rgba(0,0,0,0.82) 100%
+      );
+    }
+    .story-skip {
+      position: absolute; z-index: 30;
+      top: clamp(14px,2.5vh,28px); left: clamp(14px,2.5vw,36px);
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(8px);
+      color: var(--muted);
+      padding: clamp(5px,1vh,8px) clamp(12px,2vw,18px);
+      border-radius: 99px;
+      font-size: clamp(0.68rem, 1.3vw, 0.78rem);
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: all 0.2s;
+    }
+    .story-skip:hover { color: white; border-color: rgba(255,255,255,0.35); }
+
+    .story-top-badge {
+      position: absolute; z-index: 20;
+      top: clamp(14px,2.5vh,28px); left:50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      padding: clamp(5px,1vh,8px) clamp(14px,2vw,20px);
+      border-radius: 99px;
+      font-size: clamp(0.68rem, 1.3vw, 0.78rem);
+      color: var(--muted); letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .story-counter {
+      position: absolute; z-index: 20;
+      top: clamp(14px,2.5vh,28px); right: clamp(14px,2.5vw,36px);
+      font-size: clamp(0.65rem, 1.2vw, 0.72rem);
+      color: rgba(255,255,255,0.28); letter-spacing: 0.08em;
+    }
+
+    /* 내레이션 박스 */
+    .narr-box {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      z-index: 20;
+    }
+    .narr-speaker {
+      display: inline-block;
+      background: linear-gradient(135deg, #5b21b6, #7c3aed);
+      color: white;
+      font-size: clamp(0.72rem, 1.4vw, 0.84rem);
+      font-weight: 700;
+      padding: clamp(5px,1vh,8px) clamp(14px,2.5vw,22px);
+      border-top-right-radius: 10px;
+      letter-spacing: 0.04em;
+      min-height: 28px;
+      transition: opacity 0.3s ease;
+    }
+    .narr-speaker:empty { display: none; }
+
+    .narr-panel {
+      background: rgba(8, 10, 20, 0.9);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: clamp(16px,3vh,28px) clamp(20px,4vw,48px) clamp(20px,3vh,32px);
+      display: flex;
+      align-items: flex-start;
+      gap: clamp(12px,2vw,22px);
+      min-height: clamp(100px,18vh,160px);
+      position: relative;
+    }
+    .narr-avatar {
+      width: clamp(42px,7vw,60px);
+      height: clamp(42px,7vw,60px);
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.22);
+      object-fit: cover;
+      flex-shrink: 0;
+      transition: opacity 0.4s;
+    }
+    .narr-avatar.gone { display: none; }
+
+    .narr-text-col { flex:1; min-width:0; display:flex; flex-direction:column; gap:12px; }
+    .narr-text {
+      font-size: clamp(0.88rem, 1.8vw, 1.05rem);
+      line-height: 1.85;
+      color: var(--text);
+      font-weight: 400;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      transition: opacity 0.3s ease;
+    }
+    .narr-cursor {
+      display: inline-block;
+      width: 2px; height: 1em;
+      background: rgba(255,255,255,0.7);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.65s step-end infinite;
+    }
+
+    /* 클릭 계속 표식 */
+    .click-hint {
+      position: absolute;
+      bottom: clamp(12px,2vh,20px);
+      right: clamp(16px,3vw,36px);
+      display: flex; align-items: center; gap: 6px;
+      font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+      color: rgba(255,255,255,0.5);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .click-hint.show { opacity: 1; }
+    .click-hint-arrow {
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100%{transform:translateX(0)} 50%{transform:translateX(5px)}
+    }
+
+    /* 마지막 씬 시작 버튼 */
+    .story-start-btn {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      border: none; color: white;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: clamp(0.9rem, 1.8vw, 1rem);
+      font-weight: 700; letter-spacing: 0.04em;
+      padding: clamp(12px,2vh,16px) clamp(28px,4vw,44px);
+      border-radius: 99px; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1);
+      align-self: flex-start;
+      display: none;
+    }
+    .story-start-btn.show { display: inline-flex; }
+    .story-start-btn:hover { transform: scale(1.05); box-shadow: 0 8px 28px rgba(99,102,241,0.55); }
+
+    /* ════════════════════════════
+       3. 게임 보드 화면
+    ════════════════════════════ */
+    #s-board {
+      flex-direction: row;
+    }
+
+    /* 사이드바 */
+    .sidebar {
+      width: clamp(180px, 18vw, 230px);
+      min-width: clamp(180px, 18vw, 230px);
+      background: var(--dark2);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: clamp(16px,2.5vh,24px) clamp(14px,1.5vw,18px);
+      gap: clamp(16px,2.5vh,24px);
+      overflow-y: auto;
+    }
+    .char-card {
+      background: linear-gradient(135deg, var(--dark3), var(--dark2));
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 14px;
+      padding: clamp(12px,2vh,16px);
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+    }
+    .char-avatar {
+      width: clamp(48px,7vw,64px); height: clamp(48px,7vw,64px);
+      border-radius: 50%;
+      border: 2px solid #6366f1;
+      object-fit: cover;
+      box-shadow: 0 0 16px rgba(99,102,241,0.35);
+    }
+    .char-name {
+      font-size: clamp(0.78rem, 1.4vw, 0.88rem);
+      font-weight: 700;
+    }
+    .char-tag {
+      font-size: clamp(0.65rem, 1.1vw, 0.72rem);
+      color: var(--muted);
+      background: rgba(255,255,255,0.06);
+      padding: 2px 10px; border-radius: 99px;
+    }
+
+    .sec-label {
+      font-size: clamp(0.62rem, 1vw, 0.7rem);
+      font-weight: 700; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.28);
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .stat-item { display:flex; flex-direction:column; gap:5px; margin-bottom: 10px; }
+    .stat-row-top {
+      display:flex; align-items:center;
+      justify-content:space-between;
+    }
+    .stat-name-wrap {
+      display:flex; align-items:center; gap:5px;
+      font-size: clamp(0.75rem, 1.3vw, 0.84rem); font-weight:500;
+    }
+    .stat-val {
+      font-size: clamp(0.82rem,1.5vw,0.92rem);
+      font-weight:700; font-variant-numeric:tabular-nums;
+    }
+    .stat-bar {
+      height: 5px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px; overflow:hidden;
+    }
+    .stat-fill {
+      height:100%; border-radius:99px;
+      transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+    }
+    .fill-trust { background: linear-gradient(90deg,#0ea5e9,#38bdf8); }
+    .fill-indep { background: linear-gradient(90deg,#9333ea,#c084fc); }
+    .fill-comm  { background: linear-gradient(90deg,#059669,#34d399); }
+
+    .log-section { flex:1; display:flex; flex-direction:column; min-height:0; }
+    .log-list {
+      flex:1; overflow-y:auto;
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .log-item {
+      background: rgba(255,255,255,0.04);
+      border-left: 2px solid rgba(99,102,241,0.4);
+      border-radius: 0 8px 8px 0;
+      padding: clamp(6px,1vh,9px) clamp(8px,1.2vw,11px);
+      font-size: clamp(0.68rem, 1.1vw, 0.76rem);
+      color: var(--muted); line-height: 1.5;
+      word-break: keep-all;
+      animation: fadeUp 0.4s ease;
+    }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.12); border-radius:99px; }
+
+    /* 메인 영역 */
+    .main-area {
+      flex:1; min-width:0;
+      display:flex; flex-direction:column;
+      position:relative; overflow:hidden;
+    }
+    .top-bar {
+      background: rgba(22,27,36,0.97);
+      border-bottom: 1px solid var(--border);
+      padding: clamp(8px,1.5vh,13px) clamp(16px,3vw,24px);
+      display:flex; align-items:center; justify-content:space-between;
+      flex-shrink:0;
+    }
+    .top-bar-title {
+      font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+      font-weight: 700; color: rgba(255,255,255,0.65);
+    }
+    .top-stage-badge {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+      padding: clamp(4px,0.8vh,6px) clamp(12px,2vw,18px);
+      border-radius: 99px;
+      font-size: clamp(0.7rem, 1.3vw, 0.82rem);
+      font-weight: 700; white-space: nowrap;
+    }
+
+    /* ════════════════════════════
+       3. 메인 뷰 (비주얼 노벨)
+    ════════════════════════════ */
+    .vn-wrap {
+      flex: 1; position: relative;
+      background: #050505;
+      overflow: hidden;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .vn-wrap::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(circle at 50% 50%, rgba(99,102,241,0.15) 0%, rgba(5,5,5,1) 80%);
+    }
+    .vn-wrap::after {
+      content:''; position:absolute; inset:0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events:none;
+    }
+    .vn-character {
+      position: absolute;
+      bottom: 0; left: 50%; transform: translateX(-50%);
+      max-height: 85%; max-width: 90%;
+      object-fit: contain;
+      z-index: 5;
+      animation: charFloat 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 15px rgba(167,139,250,0.3));
+    }
+    @keyframes charFloat {
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, -10px); }
+    }
+    .vn-ui-layer {
+      position: relative; z-index: 10;
+      width: 100%;
+      padding: clamp(10px, 2vh, 16px);
+      display: flex; flex-direction: column; gap: 8px;
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 40%, transparent 100%);
+    }
+    .vn-dialogue-box {
+      background: rgba(22, 27, 36, 0.85);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 12px;
+      padding: clamp(12px, 2vw, 16px);
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .vn-speaker {
+      position: absolute; top: -14px; left: 24px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white; padding: 4px 16px; border-radius: 99px;
+      font-size: 0.85rem; font-weight: 700;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+    .vn-text {
+      font-size: clamp(0.85rem, 1.8vw, 1rem);
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .vn-choices-area {
+      display: flex; flex-direction: column; gap: 10px;
+      align-items: stretch;
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+    .vn-choices-area::-webkit-scrollbar { width: 4px; }
+    .vn-choices-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+
+    /* 모바일 반응형 */
+    @media (max-width: 768px) {
+      #s-board { flex-direction: column; }
+      .sidebar { 
+        width: 100%; min-width: 0; 
+        flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between;
+        border-right: none; border-bottom: 1px solid var(--border); 
+        padding: 8px 10px; gap: 10px;
+      }
+      .char-card { flex-direction: row; padding: 6px 10px; width: auto; flex: 1; margin-bottom: 0; background: none; border: none; box-shadow: none; }
+      .char-avatar { width: 32px; height: 32px; }
+      .char-name { font-size: 0.9rem; }
+      .char-tag { font-size: 0.6rem; padding: 2px 6px; }
+      #stats-container {
+        display: flex; flex-direction: column; justify-content: center; gap: 2px;
+        background: none; padding: 0; border: none; width: auto; flex: 1;
+      }
+      .stat-item { margin-bottom: 2px; }
+      .stat-row-top { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+      .stat-name-wrap { font-size: 0.7rem; color: #eee; }
+      .stat-name-wrap span { display: inline; }
+      .stat-val { font-size: 0.75rem; font-weight: 700; margin-left: 6px; }
+      .stat-bar { height: 3px; margin-top: 0; }
+      .log-section { display: none; }
+      .bottom-bar { display: none; }
+      .vn-character { max-height: 65%; bottom: 30%; }
+      .sec-label { display: none; }
+    }
+
+    /* ── 공용 애니메이션 ── */
+    @keyframes fadeUp  { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.1} }
+  </style>
+</head>
+<body>
+
+<!-- 블랙아웃 -->
+<div id="blackout"></div>
+
+<!-- ══════════════════════════════════════
+     1. 인트로 화면
+══════════════════════════════════════ -->
+<div class="screen" id="s-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-particles" id="particles"></div>
+  <div class="intro-side-text">NC CENTER · EDUCATIONAL GAME · 2026</div>
+
+  <div class="intro-body">
+    <div class="intro-badge">
+      <div class="intro-badge-dot"></div>
+      소설 『페인트』 연계 수업 활동
+    </div>
+    <div class="intro-subtitle">N &nbsp; C &nbsp; C E N T E R</div>
+    <h1 class="intro-title">
+      나의 선택
+      <span class="grad">인생게임</span>
+    </h1>
+    <p class="intro-desc">
+      만약 네가 <strong>부모를 직접 면접 볼 수 있다면?</strong><br>
+      제누301이 되어, 인생의 갈림길에서 선택하라.<br>
+      정답은 없다. 다만 진심으로 고민해야 한다.
+    </p>
+    <button class="intro-btn" id="intro-btn">게임 시작하기 &nbsp;▶</button>
+  </div>
+
+  <div class="intro-corner">인생게임 · NC센터</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     2. 스토리 화면
+══════════════════════════════════════ -->
+<div class="screen" id="s-story">
+  <div class="story-bg">
+    <img id="story-img" src="" alt="">
+  </div>
+
+  <button class="story-skip" id="story-skip">스킵 ▶▶</button>
+  <div class="story-top-badge">
+    <div class="intro-badge-dot"></div>
+    <span id="story-badge-txt">소설 『페인트』 연계 스토리</span>
+  </div>
+  <div class="story-counter" id="story-counter">1 / 6</div>
+
+  <div class="narr-box">
+    <div class="narr-speaker" id="narr-speaker"></div>
+    <div class="narr-panel" id="narr-panel">
+      <img class="narr-avatar gone" id="narr-avatar" src="" alt="">
+      <div class="narr-text-col">
+        <div class="narr-text" id="narr-text"></div>
+        <button class="story-start-btn" id="story-start-btn">▶ &nbsp;제누301의 이야기를 시작하다</button>
+      </div>
+      <div class="click-hint" id="click-hint">
+        <span>클릭하여 계속</span>
+        <span class="click-hint-arrow">▶</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     3. 게임 보드 화면
+══════════════════════════════════════ -->
+<div class="screen" id="s-board">
+  <aside class="sidebar">
+    <div class="char-card">
+      <img src="/images/jenu.png" alt="제누301" class="char-avatar">
+      <div class="char-name">제누 301</div>
+      <div class="char-tag">NC센터 4년차</div>
+    </div>
+
+    <div id="stats-container">
+      <div class="sec-label">나의 스탯</div>
+      <div class="stat-item">
+        <div class="stat-row-top">
+          <div class="stat-name-wrap">🤝 <span>신뢰도</span></div>
+          <span class="stat-val" id="v-trust" style="color:var(--trust)">5</span>
+        </div>
+        <div class="stat-bar"><div class="stat-fill fill-trust" id="f-trust" style="width:50%"></div></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-row-top">
+          <div class="stat-name-wrap">🌱 <span>자립심</span></div>
+          <span class="stat-val" id="v-indep" style="color:var(--indep)">5</span>
+        </div>
+        <div class="stat-bar"><div class="stat-fill fill-indep" id="f-indep" style="width:50%"></div></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-row-top">
+          <div class="stat-name-wrap">🏘️ <span>공동체성</span></div>
+          <span class="stat-val" id="v-comm" style="color:var(--comm)">5</span>
+        </div>
+        <div class="stat-bar"><div class="stat-fill fill-comm" id="f-comm" style="width:50%"></div></div>
+      </div>
+    </div>
+
+    <div class="log-section">
+      <div class="sec-label">여정 기록</div>
+      <div class="log-list" id="log-list">
+        <div class="log-item">🏁 NC센터 출발! 제누의 이야기가 시작됩니다.</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <div class="top-bar">
+      <span class="top-bar-title">NC센터: 나의 선택 — 인생게임</span>
+      <span class="top-stage-badge" id="stage-badge">0단계 · 출발</span>
+    </div>
+
+    <div class="vn-wrap" id="vn-wrap">
+      <img src="/images/jenu.png" class="vn-character" id="vn-char-img" alt="제누">
+      <div class="vn-ui-layer">
+        <div class="vn-dialogue-box" id="vn-dialogue">
+          <div class="vn-speaker">제누301</div>
+          <div class="vn-text" id="vn-text">선택의 시간에 오신 것을 환영합니다.</div>
+        </div>
+        <div class="vn-choices-area" id="vn-choices">
+          <!-- 선택지나 퍼즐 공간 -->
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="prog-labels">
+        <span class="prog-label active" data-s="0">출발</span>
+        <span class="prog-label" data-s="1">면접</span>
+        <span class="prog-label" data-s="2">관계</span>
+        <span class="prog-label" data-s="3">갈등</span>
+        <span class="prog-label" data-s="4">위기</span>
+        <span class="prog-label" data-s="5">선택</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     추가 UI (이벤트 모달, 주사위, 엔딩)
+══════════════════════════════════════ -->
+<div id="event-modal">
+  <div class="card-container">
+    <div class="card-header">
+      <img id="c-img" class="card-header-img" src="" alt="">
+      <div class="card-header-overlay">
+        <div id="c-badge" class="card-badge"></div>
+        <div id="c-title" class="card-title"></div>
+      </div>
+      <button id="c-close" class="card-close">×</button>
+    </div>
+    <div id="c-body" class="card-body"></div>
+  </div>
+</div>
+
+<div id="dice-overlay">
+  <div class="dice-cube">🎲</div>
+</div>
+
+<div class="screen" id="s-ending"></div>
+
+<!-- 외부 게임 로직 연결 -->
+<script src="/game_events.js?v=13"></script>
+
+<script>
+/* ═══════════════════════════════════════
+   공용 유틸
+═══════════════════════════════════════ */
+const blackout = document.getElementById('blackout');
+
+function fadeOut(cb, dur=500) {
+  blackout.classList.add('on');
+  setTimeout(cb, dur);
+}
+function fadeIn(dur=500) {
+  setTimeout(() => blackout.classList.remove('on'), 50);
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('show','visible');
+  });
+  const el = document.getElementById(id);
+  el.classList.add('show');
+  setTimeout(() => el.classList.add('visible'), 30);
+}
+
+/* ═══════════════════════════════════════
+   1. 인트로
+═══════════════════════════════════════ */
+// 파티클
+const pWrap = document.getElementById('particles');
+for (let i=0; i<28; i++) {
+  const p = document.createElement('span');
+  const sz = Math.random()*3+1;
+  Object.assign(p.style, {
+    width: sz+'px', height: sz+'px',
+    left: Math.random()*100+'%',
+    animationDuration: (Math.random()*12+8)+'s',
+    animationDelay:    (Math.random()*10)+'s',
+    opacity: (Math.random()*0.4+0.1),
+  });
+  pWrap.appendChild(p);
+}
+
+document.getElementById('intro-btn').addEventListener('click', () => {
+  fadeOut(() => {
+    showScreen('s-story');
+    fadeIn();
+    storyStart();
+  });
+});
+
+/* ═══════════════════════════════════════
+   2. 스토리
+═══════════════════════════════════════ */
+const scenes = [
+  { bg:'/images/nc_center.png', filt:'brightness(0.55) saturate(0.8)', zoom:true,
+    speaker:'', avatar:null,
+    text:'2037년, 대한민국.' },
+  { bg:'/images/nc_center.png', filt:'brightness(0.6) saturate(0.85)', zoom:true,
+    speaker:'', avatar:null,
+    text:'합계출산율이 0.5명대로 떨어진 이 나라는\n새로운 실험을 시작했다.' },
+  { bg:'/images/nc_center.png', filt:'brightness(0.65) saturate(0.9)', zoom:false,
+    speaker:'', avatar:null,
+    text:'국가가 아이를 키우는 곳, <b>NC센터</b>.\n이곳의 아이들은 직접 부모를 고를 수 있다.\n그 제도의 이름은 — <b style="color:#c084fc">페인트(P.A.I.N.T)</b>.' },
+  { bg:'/images/jenu.png', filt:'brightness(0.6) saturate(0.8)', zoom:false,
+    speaker:'내레이터', avatar:null,
+    text:'NC센터 301호에 사는 열네 살 <b>제누</b>.\n네 번의 면접 끝에, 마침내 결정을 내려야 하는\n마지막 순간이 찾아왔다.' },
+  { bg:'/images/parents.png', filt:'brightness(0.6) saturate(0.85)', zoom:false,
+    speaker:'제누 301', avatar:'/images/jenu.png',
+    text:'"만약 내가 부모를 직접 고를 수 있다면…\n어떤 사람을 선택해야 할까?"' },
+  { bg:'/images/parents.png', filt:'brightness(0.55) saturate(0.8)', zoom:false,
+    speaker:'', avatar:null,
+    text:'지금부터 너는 <b>제누301</b>이 된다.\n\n매 순간의 선택이 스탯을 바꾸고, 결말을 결정한다.\n\n<b style="color:#fbbf24">정답은 없다. 다만 진심으로 고민해야 한다.</b>',
+    isLast: true },
+];
+
+let sceneIdx = 0;
+let isTyping = false;
+let typingTimer = null;
+let doSkipTyping = false;
+
+const storyImg    = document.getElementById('story-img');
+const narrSpeaker = document.getElementById('narr-speaker');
+const narrAvatar  = document.getElementById('narr-avatar');
+const narrText    = document.getElementById('narr-text');
+const clickHint   = document.getElementById('click-hint');
+const startBtn    = document.getElementById('story-start-btn');
+const counter     = document.getElementById('story-counter');
+
+function storyStart() {
+  sceneIdx = 0;
+  loadScene(0);
+}
+
+function loadScene(idx) {
+  if (idx >= scenes.length) { goToBoard(); return; }
+  const sc = scenes[idx];
+  counter.textContent = `${idx+1} / ${scenes.length}`;
+
+  // 배경 이미지는 부드럽게 교체 (블랙아웃 없이)
+  // 배경이 달라질 때만 페이드
+  const prevSrc = storyImg.src;
+  const newSrc  = location.origin + sc.bg;
+  if (prevSrc !== newSrc) {
+    storyImg.style.opacity = '0';
+    setTimeout(() => {
+      storyImg.src = sc.bg;
+      storyImg.style.filter    = sc.filt || '';
+      storyImg.style.transform = sc.zoom ? 'scale(1.07)' : 'scale(1)';
+      storyImg.style.opacity   = '1';
+    }, 400);
+  } else {
+    storyImg.style.filter    = sc.filt || '';
+    storyImg.style.transform = sc.zoom ? 'scale(1.07)' : 'scale(1)';
+  }
+
+  // 텍스트만 페이드 아웃 후 교체
+  narrSpeaker.style.opacity = '0';
+  narrText.style.opacity    = '0';
+  clickHint.classList.remove('show');
+  startBtn.classList.remove('show');
+
+  setTimeout(() => {
+    narrSpeaker.textContent = sc.speaker || '';
+    narrSpeaker.style.opacity = '1';
+    if (sc.avatar) { narrAvatar.src=sc.avatar; narrAvatar.classList.remove('gone'); }
+    else           { narrAvatar.classList.add('gone'); }
+    narrText.innerHTML   = '';
+    narrText.style.opacity = '1';
+    typeScene(sc);
+  }, 350);
+
+  counter.textContent = `${idx+1} / ${scenes.length}`;
+}
+
+function typeScene(sc) {
+  isTyping = true;
+  doSkipTyping = false;
+  const raw = sc.text;
+
+  // HTML 태그와 일반 텍스트를 섞은 배열 생성
+  const tokens = tokenize(raw);
+  let i = 0;
+
+  function next() {
+    if (doSkipTyping) {
+      narrText.innerHTML = raw.replace(/\n/g,'<br>');
+      finish(sc); return;
+    }
+    if (i < tokens.length) {
+      narrText.innerHTML = tokens.slice(0,i+1).join('');
+      i++;
+      typingTimer = setTimeout(next, 40);
+    } else {
+      finish(sc);
+    }
+  }
+  next();
+}
+
+// HTML 태그 토크나이저
+function tokenize(str) {
+  const div = document.createElement('div');
+  div.innerHTML = str.replace(/\n/g,'<br>');
+  const out = [];
+  function walk(node) {
+    if (node.nodeType === 3) {
+      node.textContent.split('').forEach(c => out.push(c));
+    } else if (node.nodeName==='BR') {
+      out.push('<br>');
+    } else {
+      out.push(node.outerHTML);
+    }
+  }
+  div.childNodes.forEach(walk);
+  return out;
+}
+
+function finish(sc) {
+  isTyping = false;
+  if (sc.isLast) {
+    startBtn.classList.add('show');
+  } else {
+    clickHint.classList.add('show');
+  }
+}
+
+function nextScene() {
+  if (isTyping) { doSkipTyping=true; return; }
+  clearTimeout(typingTimer);
+  sceneIdx++;
+  loadScene(sceneIdx);
+}
+
+// 클릭/키보드
+document.getElementById('s-story').addEventListener('click', (e) => {
+  if (e.target.closest('#story-skip') || e.target.closest('#story-start-btn')) return;
+  nextScene();
+});
+document.addEventListener('keydown', (e) => {
+  const s = document.getElementById('s-story');
+  if (!s.classList.contains('visible')) return;
+  if (['Space','ArrowRight','Enter'].includes(e.code)) { e.preventDefault(); nextScene(); }
+});
+
+document.getElementById('story-skip').addEventListener('click', () => goToBoard());
+document.getElementById('story-start-btn').addEventListener('click', () => goToBoard());
+
+function goToBoard() {
+  fadeOut(() => {
+    showScreen('s-board');
+    fadeIn();
+  });
+}
+
+// 이벤트 카드 로직은 /game_events.js 에서 처리됩니다.
+
+/* ═══════════════════════════════════════
+   앱 시작
+═══════════════════════════════════════ */
+showScreen('s-intro');
+fadeIn(300);
+</script>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NC센터: 나의 선택 — 스토리</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #000;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* ── 장면 배경 이미지 ── */
+    .scene-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      transition: opacity 0.8s ease;
+    }
+    .scene-bg img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: filter 1.2s ease, transform 8s ease;
+    }
+    /* 어두운 오버레이 — 하단이 더 어둡게 (내레이션 박스 가독성) */
+    .scene-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.15) 0%,
+        rgba(0,0,0,0.1)  40%,
+        rgba(0,0,0,0.75) 70%,
+        rgba(0,0,0,0.92) 100%
+      );
+    }
+
+    /* ── 장면 전환 블랙아웃 ── */
+    .blackout {
+      position: fixed;
+      inset: 0;
+      background: black;
+      z-index: 50;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .blackout.active { opacity: 1; }
+
+    /* ── 상단 정보 ── */
+    .top-info {
+      position: fixed;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      padding: 7px 20px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.06em;
+      transition: opacity 0.5s;
+    }
+    .top-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #a78bfa;
+      animation: blink 1.8s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── 씬 번호 ── */
+    .scene-counter {
+      position: fixed;
+      top: 28px;
+      right: 36px;
+      z-index: 20;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── 내레이션 박스 ── */
+    .narr-box {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      z-index: 20;
+      padding: 0 0 0 0;
+    }
+
+    /* 화자 이름 */
+    .speaker {
+      display: inline-block;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 18px 6px 28px;
+      border-top-right-radius: 12px;
+      letter-spacing: 0.04em;
+      margin-left: 0;
+      min-height: 32px;
+      transition: opacity 0.3s;
+    }
+    .speaker:empty { display: none; }
+
+    /* 텍스트 패널 */
+    .narr-panel {
+      background: rgba(10, 10, 20, 0.88);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 24px 40px 28px;
+      min-height: 140px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      position: relative;
+    }
+
+    /* 화자 아바타 */
+    .narr-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      object-fit: cover;
+      flex-shrink: 0;
+      transition: opacity 0.4s;
+    }
+    .narr-avatar.hidden { opacity: 0; width: 0; margin: 0; padding: 0; border: none; }
+
+    /* 텍스트 영역 */
+    .narr-text-wrap { flex: 1; }
+    .narr-text {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: rgba(255,255,255,0.92);
+      font-weight: 400;
+      min-height: 64px;
+    }
+    .narr-text .cursor {
+      display: inline-block;
+      width: 2px; height: 1.1em;
+      background: rgba(255,255,255,0.7);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.7s step-end infinite;
+    }
+
+    /* 하단 힌트 */
+    .narr-hint {
+      position: absolute;
+      bottom: 14px;
+      right: 36px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.06em;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+    @keyframes hintPulse { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
+
+    /* ── 선택지 (마지막 장면용) ── */
+    .choices {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .choices.show { display: flex; }
+    .choice-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.85);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .choice-btn:hover {
+      background: rgba(99,102,241,0.25);
+      border-color: #6366f1;
+      transform: translateX(6px);
+    }
+
+    /* 다음 화살표 */
+    .next-arrow {
+      position: absolute;
+      bottom: 20px;
+      right: 36px;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: hintPulse 1.5s ease-in-out infinite;
+    }
+
+    /* ── 스킵 버튼 ── */
+    .skip-btn {
+      position: fixed;
+      top: 28px;
+      left: 36px;
+      z-index: 30;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      color: rgba(255,255,255,0.5);
+      padding: 7px 18px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: all 0.2s;
+    }
+    .skip-btn:hover { color: white; border-color: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+
+  <!-- 블랙아웃 -->
+  <div class="blackout" id="blackout"></div>
+
+  <!-- 배경 이미지 -->
+  <div class="scene-bg" id="scene-bg">
+    <img id="scene-img" src="" alt="">
+  </div>
+
+  <!-- 상단 중앙 배지 -->
+  <div class="top-info">
+    <div class="top-dot"></div>
+    <span id="top-label">소설 『페인트』 연계 스토리</span>
+  </div>
+
+  <!-- 씬 번호 -->
+  <div class="scene-counter" id="scene-counter">1 / 5</div>
+
+  <!-- 스킵 -->
+  <button class="skip-btn" onclick="skipAll()">스킵 ▶▶</button>
+
+  <!-- 내레이션 박스 -->
+  <div class="narr-box">
+    <div class="speaker" id="speaker"></div>
+    <div class="narr-panel">
+      <img class="narr-avatar hidden" id="narr-avatar" src="" alt="">
+      <div class="narr-text-wrap">
+        <div class="narr-text" id="narr-text"></div>
+        <div class="choices" id="choices"></div>
+      </div>
+      <div class="next-arrow" id="next-arrow">클릭하여 계속 ▶</div>
+    </div>
+  </div>
+
+  <script>
+    // ── 씬 데이터 ──
+    const scenes = [
+      {
+        bg: '/images/nc_center.png',
+        bgFilter: 'brightness(0.4) saturate(0.7)',
+        bgZoom: true,
+        speaker: '',
+        avatar: null,
+        text: '2037년, 대한민국.',
+        pause: 800,
+      },
+      {
+        bg: '/images/nc_center.png',
+        bgFilter: 'brightness(0.35) saturate(0.6)',
+        bgZoom: true,
+        speaker: '',
+        avatar: null,
+        text: '합계출산율이 0.5명대로 떨어진 이 나라는\n새로운 실험을 시작했다.',
+      },
+      {
+        bg: '/images/nc_center.png',
+        bgFilter: 'brightness(0.5) saturate(0.8)',
+        bgZoom: false,
+        speaker: '',
+        avatar: null,
+        text: '국가가 아이를 키우는 곳, <strong>NC센터</strong>.\n이곳의 아이들은 직접 부모를 고를 수 있다.\n그 제도의 이름은 — <strong style="color:#a78bfa">페인트(P.A.I.N.T)</strong>.',
+      },
+      {
+        bg: '/images/jenu.png',
+        bgFilter: 'brightness(0.3) saturate(0.5)',
+        bgZoom: false,
+        speaker: '내레이터',
+        avatar: null,
+        text: 'NC센터 301호에 사는 열네 살 제누.\n네 번의 면접 끝에 마침내 결정을 내려야 하는\n마지막 순간이 찾아왔다.',
+      },
+      {
+        bg: '/images/parents.png',
+        bgFilter: 'brightness(0.3) saturate(0.5)',
+        bgZoom: false,
+        speaker: '제누 301',
+        avatar: '/images/jenu.png',
+        text: '"만약 내가 부모를 직접 고를 수 있다면…\n어떤 사람을 선택해야 할까?"',
+      },
+      {
+        bg: '/images/parents.png',
+        bgFilter: 'brightness(0.25) saturate(0.4)',
+        bgZoom: false,
+        speaker: '',
+        avatar: null,
+        text: '지금부터 너는 <strong>제누301</strong>이 된다.\n\n매 순간의 선택이 스탯을 바꾸고,\n결말을 결정한다.\n\n<strong style="color:#fbbf24">정답은 없다. 다만 진심으로 고민해야 한다.</strong>',
+        isLast: true,
+      },
+    ];
+
+    let currentScene = 0;
+    let isTyping = false;
+    let typeTimeout = null;
+    let fullText = '';
+    let displayedChars = 0;
+    let skipTyping = false;
+
+    const sceneImg    = document.getElementById('scene-img');
+    const sceneBg     = document.getElementById('scene-bg');
+    const speakerEl   = document.getElementById('speaker');
+    const avatarEl    = document.getElementById('narr-avatar');
+    const narrTextEl  = document.getElementById('narr-text');
+    const blackout    = document.getElementById('blackout');
+    const sceneCounter= document.getElementById('scene-counter');
+    const nextArrow   = document.getElementById('next-arrow');
+    const choicesEl   = document.getElementById('choices');
+
+    function loadScene(idx) {
+      if (idx >= scenes.length) { goToBoard(); return; }
+
+      const s = scenes[idx];
+      sceneCounter.textContent = `${idx + 1} / ${scenes.length}`;
+
+      // 블랙아웃 → 이미지 교체 → 페이드인
+      blackout.classList.add('active');
+      setTimeout(() => {
+        // 배경
+        sceneImg.src = s.bg;
+        sceneImg.style.filter = s.bgFilter || '';
+        sceneImg.style.transform = s.bgZoom ? 'scale(1.06)' : 'scale(1)';
+
+        // 화자
+        speakerEl.textContent = s.speaker || '';
+
+        // 아바타
+        if (s.avatar) {
+          avatarEl.src = s.avatar;
+          avatarEl.classList.remove('hidden');
+        } else {
+          avatarEl.classList.add('hidden');
+        }
+
+        // 텍스트 초기화
+        narrTextEl.innerHTML = '';
+        choicesEl.classList.remove('show');
+        choicesEl.innerHTML = '';
+        nextArrow.style.display = s.isLast ? 'none' : 'flex';
+
+        blackout.classList.remove('active');
+
+        // 타이핑 시작 (약간 딜레이)
+        setTimeout(() => startTyping(s), s.pause || 200);
+      }, 500);
+    }
+
+    // HTML을 포함한 타이핑 효과
+    function startTyping(scene) {
+      isTyping = true;
+      skipTyping = false;
+      const raw = scene.text;
+      // HTML 태그를 파싱해서 글자 단위로 타이핑
+      const parsed = parseHTML(raw);
+      let charIdx = 0;
+      narrTextEl.innerHTML = '';
+
+      function type() {
+        if (skipTyping) {
+          narrTextEl.innerHTML = raw.replace(/\n/g, '<br>') + '<span class="cursor"></span>';
+          isTyping = false;
+          if (scene.isLast) showLastScene();
+          return;
+        }
+        if (charIdx < parsed.length) {
+          narrTextEl.innerHTML = parsed.slice(0, charIdx + 1).join('') + '<span class="cursor"></span>';
+          charIdx++;
+          typeTimeout = setTimeout(type, 38);
+        } else {
+          narrTextEl.innerHTML = raw.replace(/\n/g, '<br>');
+          isTyping = false;
+          if (scene.isLast) showLastScene();
+        }
+      }
+      type();
+    }
+
+    // HTML을 글자 배열로 분해
+    function parseHTML(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html.replace(/\n/g, '<br>');
+      const result = [];
+      function walk(node) {
+        if (node.nodeType === 3) {
+          // 텍스트 노드
+          node.textContent.split('').forEach(ch => result.push(ch));
+        } else if (node.nodeName === 'BR') {
+          result.push('<br>');
+        } else {
+          // 태그 시작 ~ 끝을 통째로 하나로
+          const outer = node.outerHTML;
+          result.push(outer);
+        }
+      }
+      div.childNodes.forEach(walk);
+      return result;
+    }
+
+    function showLastScene() {
+      // 마지막 장면 → 게임 시작 버튼
+      choicesEl.innerHTML = `
+        <button class="choice-btn" onclick="goToBoard()" style="background:linear-gradient(135deg,#6366f1,#a855f7);border:none;color:white;font-weight:700;text-align:center;font-size:1rem;padding:16px;">
+          ▶ 게임 시작하기 — 제누301이 되다
+        </button>
+      `;
+      choicesEl.classList.add('show');
+    }
+
+    function nextScene() {
+      if (isTyping) {
+        skipTyping = true;
+        return;
+      }
+      currentScene++;
+      loadScene(currentScene);
+    }
+
+    function skipAll() {
+      clearTimeout(typeTimeout);
+      goToBoard();
+    }
+
+    function goToBoard() {
+      blackout.classList.add('active');
+      setTimeout(() => {
+        // 실제 게임에서는 메인 앱으로 이동
+        window.location.href = '/board_preview.html';
+      }, 600);
+    }
+
+    // 클릭 / 키보드로 다음 진행
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.choice-btn') || e.target.closest('.skip-btn')) return;
+      nextScene();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (['Space','ArrowRight','Enter'].includes(e.code)) { e.preventDefault(); nextScene(); }
+    });
+
+    // 시작
+    loadScene(0);
+  </script>
+</body>
+</html>
