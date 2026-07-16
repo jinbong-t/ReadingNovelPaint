@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="stage.css">
+  <style>
+    .puzzle-section {
+      background: rgba(0,0,0,0.3);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+    .puzzle-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #a78bfa;
+    }
+    
+    .interview-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    
+    .interview-card {
+      background: rgba(255,255,255,0.05);
+      border-left: 4px solid #a78bfa;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    
+    .card-name { font-weight: bold; color: #a78bfa; margin-bottom: 5px; }
+    
+    .keyword-pool {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .keyword-btn {
+      padding: 10px 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: transparent;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 1.1rem;
+    }
+    
+    .keyword-btn.selected {
+      background: #a78bfa;
+      border-color: #a78bfa;
+    }
+
+    /* Choice */
+    .choice-section {
+      display: none;
+      background: rgba(167, 139, 250, 0.1);
+      border: 1px solid #a78bfa;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      animation: fadeIn 1s;
+    }
+    .choice-btn {
+      display: block;
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 1.1rem;
+      transition: 0.2s;
+    }
+    .choice-btn:hover { background: rgba(255,255,255,0.15); }
+  </style>
+</head>
+<body>
+  <div class="stage-container">
+    <div class="narration-box">
+      "면접이 거듭될수록, 너는 하나·해오름과 함께 있는 시간이 편해졌어. 그런데 정말 이 관계를 가족이라 부를 수 있을까? NC센터의 가디언 '결'은 너에게 이렇게 말했어."
+    </div>
+
+    <div class="puzzle-section" id="puzzle">
+      <div class="puzzle-title">다중 인터뷰 교차검증</div>
+      
+      <div class="interview-cards">
+        <div class="interview-card">
+          <div class="card-name">제누301</div>
+          "확신이 서지 않는다."
+        </div>
+        <div class="interview-card">
+          <div class="card-name">결 (가디언)</div>
+          "가족은 처음부터 완성되어 오지 않는다."
+        </div>
+        <div class="interview-card">
+          <div class="card-name">하나·해오름</div>
+          "서툴러도 함께하고 싶다."
+        </div>
+      </div>
+      
+      <div style="text-align:center; margin-bottom:15px;">세 사람의 말을 조합해 '가족이 되기 위해 필요한 것'을 2개 이상 선택하세요.</div>
+      
+      <div class="keyword-pool">
+        <button class="keyword-btn" onclick="toggleKeyword(this)">시간</button>
+        <button class="keyword-btn" onclick="toggleKeyword(this)">소통</button>
+        <button class="keyword-btn" onclick="toggleKeyword(this)">존중</button>
+        <button class="keyword-btn" onclick="toggleKeyword(this, true)">재산</button>
+        <button class="keyword-btn" onclick="toggleKeyword(this, true)">혈연</button>
+      </div>
+      
+      <button class="btn" id="verify-btn" style="width:100%; margin-top:20px;">검증하기</button>
+    </div>
+
+    <!-- Choice Section -->
+    <div class="choice-section" id="choiceSection">
+      <div class="puzzle-title">선택의 순간</div>
+      <button class="choice-btn" onclick="makeChoice('A')">A. 더 마음을 연다</button>
+      <button class="choice-btn" onclick="makeChoice('B')">B. 거리를 두고 관찰한다</button>
+      <button class="choice-btn" onclick="makeChoice('C')">C. 결에게 고민을 털어놓는다</button>
+    </div>
+  </div>
+
+  <script>
+    let selectedKeywords = 0;
+    let wrongSelected = 0;
+
+    function toggleKeyword(btn, isWrong = false) {
+      if(btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedKeywords--;
+        if(isWrong) wrongSelected--;
+      } else {
+        btn.classList.add('selected');
+        selectedKeywords++;
+        if(isWrong) wrongSelected++;
+      }
+    }
+
+    document.getElementById('verify-btn').addEventListener('click', () => {
+      if(selectedKeywords >= 2 && wrongSelected === 0) {
+        // Success
+        document.getElementById('puzzle').style.opacity = 0.5;
+        document.getElementById('puzzle').style.pointerEvents = 'none';
+        document.getElementById('choiceSection').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      } else {
+        // Fail
+        const btn = document.getElementById('verify-btn');
+        btn.style.background = '#ef4444';
+        btn.innerText = '다시 생각해볼까?';
+        setTimeout(() => {
+          btn.style.background = '';
+          btn.innerText = '검증하기';
+        }, 1000);
+      }
+    });
+
+    function makeChoice(opt) {
+      if(window.parent && window.parent.updateStats) {
+        if(opt === 'A') {
+          // 신뢰도 +2
+          window.parent.updateStats(2, 0, 0);
+        } else if(opt === 'B') {
+          // 자립심 +1
+          window.parent.updateStats(0, 1, 0);
+        } else if(opt === 'C') {
+          // 공동체성 +1
+          window.parent.updateStats(0, 0, 1);
+        }
+        window.parent.loadStage(3);
+      } else {
+        window.location.href = '3.html';
+      }
+    }
+  </script>
+</body>
+</html>

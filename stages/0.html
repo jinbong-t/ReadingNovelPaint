@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="stage.css">
+</head>
+<body>
+  <div class="stage-container">
+    <div id="narration-container"></div>
+    <button class="btn" id="next-btn">다음</button>
+  </div>
+
+  <script>
+    const narrations = [
+      "만약 네가 부모를 직접 면접 볼 수 있다면?",
+      "2024년 대한민국의 합계출산율은 0.75명. 여성 한 명이 평생 낳는 아이의 수야. 인구를 유지하려면 2.1명이 필요해. OECD 평균도 1.5명 수준인데, 한국은 그 절반에도 못 미쳐. 세계에서 가장 낮은 수준의 나라 중 하나, 그게 지금 우리나라야.",
+      "이 이야기 속 나라는 그 문제를 다른 방식으로 풀어보려 했어. 국가가 아이를 키우는 곳, NC센터. 이곳 아이들은 '페인트(Parent's Interview)'로 부모를 직접 고를 수 있어.",
+      "너는 지금부터 '제누301'이 되어, 4년째 이어온 이 선택의 마지막 순간에 서 있어. 정답은 없어. 하지만 매 순간 진심으로 고민해야 해. 지금부터 묻게 될 거야 — 가족이란 무엇인가."
+    ];
+
+    let currentIndex = 0;
+    const container = document.getElementById('narration-container');
+    const nextBtn = document.getElementById('next-btn');
+
+    function showNext() {
+      if (currentIndex < narrations.length) {
+        const box = document.createElement('div');
+        box.className = 'narration-box';
+        box.style.animation = 'fadeIn 0.8s ease-out';
+        box.innerHTML = narrations[currentIndex];
+        container.appendChild(box);
+        currentIndex++;
+        
+        if (currentIndex === narrations.length) {
+          nextBtn.innerText = "게임 시작하기";
+        }
+        
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      } else {
+        // Move to stage 1
+        if (window.parent && window.parent.loadStage) {
+          window.parent.loadStage(1);
+        } else {
+          window.location.href = '1.html';
+        }
+      }
+    }
+
+    nextBtn.addEventListener('click', showNext);
+    
+    // Show first narration on load
+    showNext();
+  </script>
+</body>
+</html>

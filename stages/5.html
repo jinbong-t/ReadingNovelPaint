@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="stage.css">
+  <style>
+    .puzzle-section {
+      background: rgba(0,0,0,0.3);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+    .puzzle-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #60a5fa;
+    }
+
+    /* Slider */
+    .slider-container {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: rgba(255,255,255,0.2);
+      height: 8px;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #60a5fa;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Memory Match */
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .memory-card {
+      background: rgba(255,255,255,0.1);
+      aspect-ratio: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      color: transparent; /* hide text initially */
+      transition: 0.3s;
+      border: 2px solid transparent;
+    }
+    .memory-card.flipped {
+      background: rgba(96, 165, 250, 0.2);
+      color: white;
+      border-color: #60a5fa;
+    }
+    .memory-card.matched {
+      background: rgba(52, 211, 153, 0.2);
+      color: #34d399;
+      border-color: #34d399;
+      cursor: default;
+    }
+
+    /* Ending Display */
+    #ending-section {
+      display: none;
+      text-align: center;
+      animation: fadeIn 2s;
+    }
+    .ending-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+    .ending-msg {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      background: rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 15px;
+    }
+    .common-closing {
+      font-style: italic;
+      color: #cbd5e1;
+      margin-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-container" id="play-area">
+    <div class="narration-box">
+      "제누는 깨달았어. 가족은 처음부터 주어지는 게 아니라, 매 순간의 선택으로 만들어진다는 걸. 완벽한 부모도, 완벽한 자식도 없어. 다만 서로를 이해하려는 시도만 있을 뿐."
+    </div>
+
+    <!-- Puzzle 1: Slider -->
+    <div class="puzzle-section">
+      <div class="puzzle-title">나에게 가족이란?</div>
+      <div class="slider-container">
+        <div class="slider-labels">
+          <span>혈연 중심</span>
+          <span>관계·선택 중심</span>
+        </div>
+        <input type="range" min="1" max="100" value="50" id="family-slider">
+      </div>
+      <small style="color:#cbd5e1; display:block; text-align:center;">정답은 없습니다. 당신의 생각을 표현해보세요.</small>
+    </div>
+
+    <!-- Puzzle 2: Memory Match -->
+    <div class="puzzle-section">
+      <div class="puzzle-title">가족의 의미 맞추기 (같은 단어 짝맞추기)</div>
+      <div class="memory-grid" id="memory-grid">
+        <!-- Cards injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Ending Screen -->
+  <div class="stage-container" id="ending-section">
+    <h1 class="ending-title" id="ending-name"></h1>
+    <div class="ending-msg" id="ending-text"></div>
+    <div class="common-closing">
+      "제누의 이야기는 끝났지만, 진짜 질문은 지금부터야. 너에게 가족은 어떤 의미야?"
+    </div>
+  </div>
+
+  <script>
+    // Memory Game
+    const words = ['신뢰', '소통', '시간', '존중', '연대', '선택'];
+    const deck = [...words, ...words].sort(() => Math.random() - 0.5);
+    
+    const grid = document.getElementById('memory-grid');
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let matches = 0;
+
+    deck.forEach((word, index) => {
+      const card = document.createElement('div');
+      card.className = 'memory-card';
+      card.dataset.word = word;
+      card.innerText = word;
+      card.addEventListener('click', flipCard);
+      grid.appendChild(card);
+    });
+
+    function flipCard() {
+      if (lockBoard) return;
+      if (this === firstCard) return;
+
+      this.classList.add('flipped');
+
+      if (!firstCard) {
+        firstCard = this;
+        return;
+      }
+
+      secondCard = this;
+      checkForMatch();
+    }
+
+    function checkForMatch() {
+      const isMatch = firstCard.dataset.word === secondCard.dataset.word;
+
+      if (isMatch) {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+        resetBoard();
+        matches++;
+        if (matches === words.length) {
+          setTimeout(showEnding, 1000);
+        }
+      } else {
+        lockBoard = true;
+        setTimeout(() => {
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          resetBoard();
+        }, 800);
+      }
+    }
+
+    function resetBoard() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
+    }
+
+    // Ending Logic
+    function showEnding() {
+      document.getElementById('play-area').style.display = 'none';
+      const endingSection = document.getElementById('ending-section');
+      endingSection.style.display = 'block';
+
+      let stats = { trust: 5, indep: 5, comm: 5 };
+      if (window.parent && window.parent.getStats) {
+        stats = window.parent.getStats();
+      }
+
+      // Determine highest stat
+      const maxStat = Math.max(stats.trust, stats.indep, stats.comm);
+      
+      // Check for balance (diff between max and min is <= 2)
+      const minStat = Math.min(stats.trust, stats.indep, stats.comm);
+      const isBalanced = (maxStat - minStat) <= 2;
+
+      let endingName = '';
+      let endingText = '';
+      let color = '';
+
+      if (isBalanced) {
+        endingName = '⚖️ 균형 엔딩';
+        endingText = '완벽하진 않아도, 여러 관계가 제누를 지탱해주었어.';
+        color = '#c084fc'; // purple
+      } else if (maxStat === stats.indep) {
+        endingName = '🚪 자립 엔딩 (원작 결말)';
+        endingText = '제누는 하나·해오름을 부모가 아닌 친구로 남기로 했어. 그리고 스스로 어른이 되기로 결심했지.';
+        color = '#a78bfa';
+      } else if (maxStat === stats.trust) {
+        endingName = '🏡 새 가족 엔딩';
+        endingText = '제누는 하나·해오름과 새로운 가족이 되기로 했어.';
+        color = '#38bdf8';
+      } else {
+        // comm
+        endingName = '🤝 연대 엔딩';
+        endingText = '제누는 자신의 선택 이후에도, 박 선생님처럼 어려움을 겪는 사람을 외면하지 않았어.';
+        color = '#34d399';
+      }
+
+      document.getElementById('ending-name').innerText = endingName;
+      document.getElementById('ending-name').style.color = color;
+      document.getElementById('ending-text').innerText = endingText;
+      document.getElementById('ending-text').style.borderLeft = `4px solid ${color}`;
+      
+      if(window.parent && window.parent.document.querySelector('.stat-board')) {
+        window.parent.document.querySelector('.stat-board').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
