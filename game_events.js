@@ -188,17 +188,17 @@ function renderStage1() {
         <div class="puzzle-title">🔍 면접을 진행할 예비부모 선택하기 — 이미지를 클릭하세요!</div>
         <div id="parent-grid" style="display:flex; gap:10px; justify-content:center; margin-top:12px; flex-wrap:wrap;">
           <div class="parent-card" onclick="ch1('formal')" id="pc-formal">
-            <img src="/images/parent_formal.png" alt="형식적 태도형">
+            <img src="images/parent_formal.png" alt="형식적 태도형">
             <div class="parent-label">형식적 태도형</div>
             <div class="parent-desc">정해진 멘트만 반복, 정장을 갖춰 입은 사람</div>
           </div>
           <div class="parent-card" onclick="ch1('hana')" id="pc-hana">
-            <img src="/images/parent_hana.png" alt="하나·해오름형">
+            <img src="images/parent_hana.png" alt="하나·해오름형">
             <div class="parent-label">하나 & 해오름</div>
             <div class="parent-desc">준비는 서툴지만 솔직하고 인간적인 사람</div>
           </div>
           <div class="parent-card" onclick="ch1('flashy')" id="pc-flashy">
-            <img src="/images/parent_flashy.png" alt="혜택 목적형">
+            <img src="images/parent_flashy.png" alt="혜택 목적형">
             <div class="parent-label">혜택 목적형</div>
             <div class="parent-desc">아이를 예쁜 소유물처럼 대하는 사람</div>
           </div>

@@ -447,7 +447,7 @@
 .art-room-bg {
   background: 
     linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)),
-    url('/images/art_room_bg.png') no-repeat center center / cover !important;
+    url('images/art_room_bg.png') no-repeat center center / cover !important;
 }
 .art-room-bg::before, .art-room-bg::after { display: none !important; }
 

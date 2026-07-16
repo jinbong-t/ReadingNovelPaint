@@ -636,7 +636,7 @@
 <div class="screen" id="s-board">
   <aside class="sidebar">
     <div class="char-card">
-      <img src="/ReadingNovelPaint/images/jenu.png" alt="제누301" class="char-avatar">
+      <img src="images/jenu.png" alt="제누301" class="char-avatar">
       <div class="char-name">제누 301</div>
       <div class="char-tag">NC센터 4년차</div>
     </div>
@@ -681,7 +681,7 @@
     </div>
 
     <div class="vn-wrap" id="vn-wrap">
-      <img src="/ReadingNovelPaint/images/jenu.png" class="vn-character" id="vn-char-img" alt="제누">
+      <img src="images/jenu.png" class="vn-character" id="vn-char-img" alt="제누">
       <div class="vn-ui-layer">
         <div class="vn-dialogue-box" id="vn-dialogue">
           <div class="vn-speaker">제누301</div>
@@ -789,22 +789,22 @@ document.getElementById('intro-btn').addEventListener('click', () => {
    2. 스토리
 ═══════════════════════════════════════ */
 const scenes = [
-  { bg:'/images/nc_center.png', filt:'brightness(0.55) saturate(0.8)', zoom:true,
+  { bg:'images/nc_center.png', filt:'brightness(0.55) saturate(0.8)', zoom:true,
     speaker:'', avatar:null,
     text:'2037년, 대한민국.' },
-  { bg:'/images/nc_center.png', filt:'brightness(0.6) saturate(0.85)', zoom:true,
+  { bg:'images/nc_center.png', filt:'brightness(0.6) saturate(0.85)', zoom:true,
     speaker:'', avatar:null,
     text:'합계출산율이 0.5명대로 떨어진 이 나라는\n새로운 실험을 시작했다.' },
-  { bg:'/images/nc_center.png', filt:'brightness(0.65) saturate(0.9)', zoom:false,
+  { bg:'images/nc_center.png', filt:'brightness(0.65) saturate(0.9)', zoom:false,
     speaker:'', avatar:null,
     text:'국가가 아이를 키우는 곳, <b>NC센터</b>.\n이곳의 아이들은 직접 부모를 고를 수 있다.\n그 제도의 이름은 — <b style="color:#c084fc">페인트(P.A.I.N.T)</b>.' },
-  { bg:'/images/jenu.png', filt:'brightness(0.6) saturate(0.8)', zoom:false,
+  { bg:'images/jenu.png', filt:'brightness(0.6) saturate(0.8)', zoom:false,
     speaker:'내레이터', avatar:null,
     text:'NC센터 301호에 사는 열네 살 <b>제누</b>.\n네 번의 면접 끝에, 마침내 결정을 내려야 하는\n마지막 순간이 찾아왔다.' },
-  { bg:'/images/parents.png', filt:'brightness(0.6) saturate(0.85)', zoom:false,
-    speaker:'제누 301', avatar:'/images/jenu.png',
+  { bg:'images/parents.png', filt:'brightness(0.6) saturate(0.85)', zoom:false,
+    speaker:'제누 301', avatar:'images/jenu.png',
     text:'"만약 내가 부모를 직접 고를 수 있다면…\n어떤 사람을 선택해야 할까?"' },
-  { bg:'/images/parents.png', filt:'brightness(0.55) saturate(0.8)', zoom:false,
+  { bg:'images/parents.png', filt:'brightness(0.55) saturate(0.8)', zoom:false,
     speaker:'', avatar:null,
     text:'지금부터 너는 <b>제누301</b>이 된다.\n\n매 순간의 선택이 스탯을 바꾸고, 결말을 결정한다.\n\n<b style="color:#fbbf24">정답은 없다. 다만 진심으로 고민해야 한다.</b>',
     isLast: true },
@@ -836,7 +836,7 @@ function loadScene(idx) {
   // 배경 이미지는 부드럽게 교체 (블랙아웃 없이)
   // 배경이 달라질 때만 페이드
   const prevSrc = storyImg.src;
-  const newSrc  = location.origin + sc.bg;
+  const newSrc  = sc.bg;
   if (prevSrc !== newSrc) {
     storyImg.style.opacity = '0';
     setTimeout(() => {
