@@ -57,11 +57,14 @@ function showVnContent(textHtml, choicesHtml, postRender) {
   function finish() {
     vnChoices.innerHTML = choicesHtml;
     vnChoices.style.display = 'flex';
+    
+    if (postRender) postRender();
+
     vnChoices.style.opacity = 0;
     vnChoices.style.maxHeight = '0px';
     vnChoices.style.overflow = 'hidden';
     
-    // postRender는 DOM이 완전히 갱신된 뒤 실행
+    // 애니메이션 시작
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         vnChoices.style.transition = 'max-height 1.5s ease-in-out, opacity 1s ease-in';
@@ -71,7 +74,6 @@ function showVnContent(textHtml, choicesHtml, postRender) {
         setTimeout(() => {
             vnChoices.style.maxHeight = 'none';
             vnChoices.style.overflow = 'visible';
-            if (postRender) postRender();
         }, 1500);
       });
     });
