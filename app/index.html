@@ -462,6 +462,13 @@
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
       background-size: 40px 40px; pointer-events:none;
     }
+    .narr-box {
+      position: absolute;
+      bottom: 4%; left: 50%; transform: translateX(-50%);
+      width: 90%; max-width: 800px;
+      max-height: 45%;
+      display: flex; flex-direction: column;
+    }
     .vn-character {
       position: absolute;
       bottom: 0; left: 50%; transform: translateX(-50%);
@@ -481,6 +488,15 @@
       padding: clamp(10px, 2vh, 16px);
       display: flex; flex-direction: column; gap: 8px;
       background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 40%, transparent 100%);
+    }
+    .narr-panel {
+      background: rgba(26, 26, 46, 0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 24px;
+      display: flex; flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      overflow-y: auto;
     }
     .vn-dialogue-box {
       background: rgba(22, 27, 36, 0.85);
@@ -506,7 +522,7 @@
     .vn-choices-area {
       display: flex; flex-direction: column; gap: 10px;
       align-items: stretch;
-      max-height: 40vh;
+      max-height: 60vh;
       overflow-y: auto;
     }
     .vn-choices-area::-webkit-scrollbar { width: 4px; }
@@ -678,10 +694,13 @@
       <div class="prog-labels">
         <span class="prog-label active" data-s="0">출발</span>
         <span class="prog-label" data-s="1">면접</span>
-        <span class="prog-label" data-s="2">관계</span>
-        <span class="prog-label" data-s="3">갈등</span>
-        <span class="prog-label" data-s="4">위기</span>
-        <span class="prog-label" data-s="5">선택</span>
+        <span class="prog-label" data-s="2">가치관</span>
+        <span class="prog-label" data-s="3">일상</span>
+        <span class="prog-label" data-s="4">소통</span>
+        <span class="prog-label" data-s="5">외부</span>
+        <span class="prog-label" data-s="6">진실</span>
+        <span class="prog-label" data-s="7">위기</span>
+        <span class="prog-label" data-s="8">선택</span>
       </div>
       <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
     </div>

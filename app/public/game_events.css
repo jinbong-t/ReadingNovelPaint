@@ -434,3 +434,96 @@
   font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem;
 }
 .btn-submit:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+/* ── 박 선생님 방 배경 ── */
+.teacher-room-bg {
+  background: 
+    linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.85)),
+    url('teacher_room.png') no-repeat center center / cover !important;
+}
+.teacher-room-bg::before, .teacher-room-bg::after { display: none !important; }
+
+/* ── 스테이지 6: 미술실 퍼즐 ── */
+.art-room-bg {
+  background: 
+    linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)),
+    url('/images/art_room_bg.png') no-repeat center center / cover !important;
+}
+.art-room-bg::before, .art-room-bg::after { display: none !important; }
+
+.puzzle-scratch-container {
+  position: relative;
+  width: 95%; max-width: 600px;
+  height: 280px;
+  margin: 0 auto 10px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+#scratch-canvas {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 10;
+  cursor: crosshair;
+  touch-action: none;
+}
+.scratch-under-content {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #111;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 5;
+  padding: 10px;
+}
+.math-puzzle-box {
+  background: rgba(255,253,240,0.95);
+  color: #111; padding: 10px; border-radius: 8px;
+  font-family: 'Comic Sans MS', '나눔손글씨 펜', cursive;
+  font-size: 0.8rem; width: 100%; text-align: left;
+  line-height: 1.3;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+}
+.alpha-table {
+  width: 100%; border-collapse: collapse; margin-bottom: 6px;
+  text-align: center; font-size: 0.65rem; font-family: 'Noto Sans KR', sans-serif;
+}
+.alpha-table td {
+  border: 1px solid #d1d5db; padding: 1px 0;
+}
+.alpha-table .l { font-weight: 800; background: rgba(0,0,0,0.05); }
+.alpha-table .n { color: #6b7280; font-size: 0.55rem; }
+.math-puzzle-box strong { color: #b45309; }
+.math-eq { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+.color-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  display: inline-block; border: 1px solid rgba(0,0,0,0.3); flex-shrink: 0;
+}
+.color-dot.red { background: #ef4444; }
+.color-dot.blue { background: #3b82f6; }
+.color-dot.yellow { background: #facc15; }
+.color-dot.white { background: #ffffff; }
+.color-dot.black { background: #000000; }
+
+.password-input-group {
+  display: flex; gap: 6px; justify-content: center; margin-top: 4px;
+}
+.pwd-char {
+  width: 32px; height: 38px;
+  background: rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 6px; color: #fbbf24;
+  font-size: 1.1rem; font-weight: 900;
+  text-align: center; text-transform: uppercase;
+}
+.pwd-char:focus {
+  outline: none; border-color: #fbbf24;
+  background: rgba(251,191,36,0.1);
+}
+.scratch-instructions {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.6); color: white;
+  padding: 4px 10px; border-radius: 99px;
+  font-size: 0.7rem; z-index: 15; pointer-events: none;
+  animation: blink 2s infinite;
+}

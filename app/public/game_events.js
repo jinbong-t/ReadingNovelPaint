@@ -86,11 +86,13 @@ function renderStage(stageNum) {
 
   // 스테이지에 맞게 제누 이미지 필터 교체
   const charImg = document.getElementById('vn-char-img');
-  if (stageNum !== 6) {
+  if (stageNum !== 7 && stageNum !== 6) {
     vnWrap.classList.remove('teacher-room-bg');
+    vnWrap.classList.remove('art-room-bg');
     if (charImg) {
+      charImg.src = 'images/jenu.png';
       charImg.style.display = 'block';
-      if (stageNum === 7) {
+      if (stageNum === 8) {
         charImg.style.filter = 'drop-shadow(0 0 30px rgba(251,191,36,0.5)) brightness(1.1)';
       } else {
         charImg.style.filter = 'drop-shadow(0 0 15px rgba(167,139,250,0.3))';
@@ -99,7 +101,7 @@ function renderStage(stageNum) {
   }
 
   setTimeout(() => {
-    if (stageNum !== 6) vnText.style.opacity = 1;
+    if (stageNum !== 7) vnText.style.opacity = 1;
     switch (stageNum) {
       case 0: renderStage0(); break;
       case 1: renderStage1(); break;
@@ -109,6 +111,7 @@ function renderStage(stageNum) {
       case 5: renderStage5(); break;
       case 6: renderStage6(); break;
       case 7: renderStage7(); break;
+      case 8: renderStage8(); break;
     }
   }, 400);
 }
@@ -146,18 +149,18 @@ function logAction(msg) {
 }
 
 function goNextStage() {
-  if (currentStage >= 7) {
+  if (currentStage >= 8) {
     showEnding();
     return;
   }
   currentStage++;
 
-  const stageNames = ['0. 출발', '1. 면접', '2. 가치관', '3. 일상', '4. 소통', '5. 외부', '6. 위기', '7. 선택'];
+  const stageNames = ['0. 출발', '1. 면접', '2. 가치관', '3. 일상', '4. 소통', '5. 외부', '6. 진실', '7. 위기', '8. 선택'];
   const badge = document.getElementById('stage-badge');
   if (badge) badge.textContent = stageNames[currentStage];
 
   const progFill = document.getElementById('prog-fill');
-  if (progFill) progFill.style.width = (currentStage / 7 * 100) + '%';
+  if (progFill) progFill.style.width = (currentStage / 8 * 100) + '%';
 
   document.querySelectorAll('.prog-label').forEach((l, idx) => {
     l.classList.toggle('active', idx === currentStage);
@@ -408,30 +411,198 @@ function showDoorTransition(callback) {
   }));
 }
 
-// ===== 스테이지 6: 박선생님 위기 + 알파벳 시계 퍼즐 =====
-// 시계 자리별 알파벳: 1=M, 2=K, 3=T, 4=B, 5=U, 6=D, 7=R, 8=F, 9=Q, 10=E, 11=X, 12=S
-const CLOCK_LETTERS = ['M','K','T','B','U','D','R','F','Q','E','X','S'];
+// ===== 스테이지 6: 미술실 퍼즐 (PAINT 방정식) =====
 function renderStage6() {
-  // 방문 효과 먼저 보여주고 그 다음에 씬 로드
+  vnWrap.classList.add('art-room-bg');
+  const charImg = document.getElementById('vn-char-img');
+  if (charImg) charImg.style.display = 'none';
+
+  showVnContent(
+    `미술실 구석에서 먼지 쌓인 캔버스와 메모를 발견했어.<br>캔버스 밑에 무언가 적혀있는 것 같아... <b>마우스로 페인트를 지워보자!</b>`,
+    `
+      <div class="puzzle-wrap" style="position:relative;">
+        <div class="puzzle-title">🎨 진실의 색채 방정식</div>
+        
+        <div class="puzzle-scratch-container">
+          <canvas id="scratch-canvas"></canvas>
+          <div class="scratch-under-content" id="scratch-under">
+            <div class="math-puzzle-box">
+              <table class="alpha-table" style="margin-bottom:4px;">
+                <tr class="l"><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td><td>K</td><td>L</td><td>M</td></tr>
+                <tr class="n"><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td></tr>
+                <tr class="l"><td>N</td><td>O</td><td>P</td><td>Q</td><td>R</td><td>S</td><td>T</td><td>U</td><td>V</td><td>W</td><td>X</td><td>Y</td><td>Z</td></tr>
+                <tr class="n"><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td></tr>
+              </table>
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; background:rgba(0,0,0,0.05); padding:4px; border-radius:6px; margin-bottom:6px;">
+                <div class="math-eq" style="white-space:nowrap;"><span class="color-dot red"></span>+<span class="color-dot blue"></span>=16</div>
+                <div class="math-eq" style="white-space:nowrap;"><span class="color-dot blue"></span>+<span class="color-dot yellow"></span>=1</div>
+                <div class="math-eq" style="white-space:nowrap;"><span class="color-dot red"></span>+<span class="color-dot yellow"></span>=9</div>
+              </div>
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:6px;">
+                <div class="math-eq" style="white-space:nowrap;">1.🟣:<span class="color-dot red"></span>+<span class="color-dot blue"></span>=?</div>
+                <div class="math-eq" style="white-space:nowrap;">2.🟢:<span class="color-dot blue"></span>+<span class="color-dot yellow"></span>=?</div>
+                <div class="math-eq" style="white-space:nowrap;">3.🟠:<span class="color-dot red"></span>+<span class="color-dot yellow"></span>=?</div>
+              </div>
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:12px;">
+                <div class="math-eq" style="white-space:nowrap;">4.분홍:<span class="color-dot red"></span>+<span class="color-dot white"></span>(2)=?</div>
+                <div class="math-eq" style="white-space:nowrap;">5.진홍:<span class="color-dot red"></span>+<span class="color-dot black"></span>(8)=?</div>
+              </div>
+            </div>
+          </div>
+          <div class="scratch-instructions" id="scratch-inst">마우스로 페인트를 긁어내세요</div>
+        </div>
+        
+        <div id="paint-lock-area" style="display:none; text-align:center; margin-top:12px;">
+          <div style="font-size:0.8rem; color:#fbbf24;">도출된 5자리 알파벳을 입력하세요 (부모 면접의 진짜 의미)</div>
+          <div class="password-input-group">
+            <input type="text" maxlength="1" class="pwd-char" id="pwd1">
+            <input type="text" maxlength="1" class="pwd-char" id="pwd2">
+            <input type="text" maxlength="1" class="pwd-char" id="pwd3">
+            <input type="text" maxlength="1" class="pwd-char" id="pwd4">
+            <input type="text" maxlength="1" class="pwd-char" id="pwd5">
+          </div>
+          <div id="p6-msg" class="p6-feedback" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    `,
+    () => {
+      // 캔버스 스크래치 로직
+      const canvas = document.getElementById('scratch-canvas');
+      const ctx = canvas.getContext('2d');
+      const container = document.querySelector('.puzzle-scratch-container');
+      
+      canvas.width = container.offsetWidth;
+      canvas.height = container.offsetHeight;
+      
+      // 회색/검은색 페인트 채우기
+      ctx.fillStyle = '#4b5563';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#1f2937';
+      for(let i=0; i<80; i++) {
+        ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 30, 10);
+      }
+      
+      ctx.globalCompositeOperation = 'destination-out';
+      
+      let isDrawing = false;
+      let erasedPixels = 0;
+      let revealed = false;
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function scratch(e) {
+        if (!isDrawing || revealed) return;
+        e.preventDefault();
+        const { x, y } = getPos(e);
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fill();
+        
+        erasedPixels++;
+        if (erasedPixels > 120 && !revealed) {
+          checkReveal();
+        }
+      }
+
+      function checkReveal() {
+        revealed = true;
+        canvas.style.transition = 'opacity 0.8s';
+        canvas.style.opacity = '0';
+        document.getElementById('scratch-inst').style.display = 'none';
+        setTimeout(() => {
+          canvas.style.display = 'none';
+          document.getElementById('paint-lock-area').style.display = 'block';
+          document.getElementById('pwd1').focus();
+        }, 800);
+      }
+
+      canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e); });
+      canvas.addEventListener('mousemove', scratch);
+      canvas.addEventListener('mouseup', () => isDrawing = false);
+      canvas.addEventListener('mouseleave', () => isDrawing = false);
+      
+      canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); }, {passive:false});
+      canvas.addEventListener('touchmove', scratch, {passive:false});
+      canvas.addEventListener('touchend', () => isDrawing = false);
+
+      let paintFailCount = 0;
+
+      // 비밀번호 입력 처리
+      const pwds = [
+        document.getElementById('pwd1'), document.getElementById('pwd2'),
+        document.getElementById('pwd3'), document.getElementById('pwd4'),
+        document.getElementById('pwd5')
+      ];
+      pwds.forEach((p, idx) => {
+        p.addEventListener('input', () => {
+          if (p.value.length === 1 && idx < 4) pwds[idx+1].focus();
+          checkPassword();
+        });
+        p.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && p.value === '' && idx > 0) pwds[idx-1].focus();
+        });
+      });
+
+      function checkPassword() {
+        const val = pwds.map(p => p.value.toUpperCase()).join('');
+        if (val.length === 5) {
+          if (val === 'PAINT') {
+            document.getElementById('p6-msg').className = 'p6-feedback correct';
+            document.getElementById('p6-msg').textContent = '✅ 정답입니다! PAINT의 의미를 깨달았습니다.';
+            pwds.forEach(p => { p.disabled = true; p.style.borderColor = '#34d399'; });
+            applyStats(0, 2, 1); 
+            logAction('🎨 연립방정식 해독 성공! 진정한 부모 면접의 의미를 알게 되었습니다.');
+            setTimeout(() => {
+              showVnContent(
+                `메모의 뒷면에는 이런 글이 있었어.<br><b>"PAINT는 부모 면접. 하지만 평가받는 건 우리가 아니라, 부모가 될 자격이 있는지 그들을 시험하는 것이다."</b><br>제누는 선택의 주도권이 자신에게 있음을 깨달았어.`,
+                `<button class="btn-action" onclick="goNextStage()">비밀의 방을 나서기 ▶</button>`
+              );
+            }, 1500);
+          } else {
+            paintFailCount++;
+            const msgEl = document.getElementById('p6-msg');
+            msgEl.className = 'p6-feedback wrong';
+            if (paintFailCount === 1) {
+              msgEl.innerHTML = '❌ 틀렸습니다.<br><span style="font-size:0.75rem; color:#fca5a5;">[힌트 1] 앞의 3글자는 주어진 식에서 바로 알 수 있어요! (16=P, 1=A, 9=I)</span>';
+            } else if (paintFailCount === 2) {
+              msgEl.innerHTML = '❌ 조금 더 고민해보세요.<br><span style="font-size:0.75rem; color:#fca5a5;">[힌트 2] 뒤의 두 글자를 풀려면 빨간색(🔴)을 알아야 해요. 세 식을 모두 더해보세요!</span>';
+            } else {
+              msgEl.innerHTML = '❌ 거의 다 왔어요!<br><span style="font-size:0.75rem; color:#fca5a5;">[힌트 3] 🔴+🔵+🟡=13 이므로 🔴=12 입니다. 나머지 두 글자는 N, T겠죠?</span>';
+            }
+          }
+        } else {
+          document.getElementById('p6-msg').textContent = '';
+        }
+      }
+    }
+  );
+}
+
+// ===== 스테이지 7: 박선생님 위기 + 알파벳 시계 퍼즐 (기존 6단계) =====
+const CLOCK_LETTERS = ['M','K','T','B','U','D','R','F','Q','E','X','S'];
+function renderStage7() {
   showDoorTransition(() => {
     _loadTeacherRoom();
   });
 }
 
 function _loadTeacherRoom() {
-  // 배경을 박선생님 방으로 변경
-  vnWrap.style.background = 'radial-gradient(ellipse at 30% 20%, #1a1033 0%, #0d0d1a 60%, #000 100%)';
+  vnWrap.classList.remove('art-room-bg');
+  vnWrap.classList.add('teacher-room-bg');
+  vnWrap.style.background = ''; // Clear inline style to let CSS class take over
 
-  // 알파벳 시계 SVG 생성
   let clockHTML = '<div class="alpha-clock-container">';
   clockHTML += '<div class="clock-face">';
-  // 시계 장식 (눈금)
   for (let i = 0; i < 60; i++) {
     const angle = i * 6;
     const isHour = i % 5 === 0;
     clockHTML += `<div class="tick ${isHour ? 'tick-hour' : ''}" style="transform:rotate(${angle}deg)"></div>`;
   }
-  // 알파벳 숫자 배치
   for (let i = 0; i < 12; i++) {
     const pos = i + 1;
     const angle = (pos * 30 - 90) * Math.PI / 180;
@@ -444,13 +615,11 @@ function _loadTeacherRoom() {
       <span class="a-pos">${pos}시</span>
     </div>`;
   }
-  // 시계 바늘 (장식)
   clockHTML += '<div class="clock-hand hour-hand"></div>';
   clockHTML += '<div class="clock-hand min-hand"></div>';
   clockHTML += '<div class="clock-center-dot"></div>';
-  clockHTML += '</div></div>'; // clock-face, alpha-clock-container
+  clockHTML += '</div></div>';
 
-  // 벽 메모 (병문안 기록 손글씨)
   const memoHTML = `
     <div class="wall-memo-note">
       <div class="wall-memo-pin">📌</div>
@@ -466,9 +635,10 @@ function _loadTeacherRoom() {
   `;
 
   const charImg = document.getElementById('vn-char-img');
-  if (charImg) charImg.style.display = 'none';
+  if (charImg) {
+    charImg.style.display = 'none';
+  }
 
-  // 배경에 방 텍스처(클래스) 추가
   vnWrap.classList.add('teacher-room-bg');
   vnText.style.opacity = 1;
 
@@ -487,15 +657,15 @@ function _loadTeacherRoom() {
             <span id="alpha-display" class="alpha-display">_ _ _ _ _</span>
             <button id="alpha-reset-btn" class="alpha-reset-btn">↩</button>
           </div>
-          <div id="p6-msg" class="p6-feedback"></div>
+          <div id="p7-msg" class="p6-feedback"></div>
         </div>
       </div>
-      <div class="puzzle-wrap" id="p6-choice" style="display:none; margin-top:10px;">
+      <div class="puzzle-wrap" id="p7-choice" style="display:none; margin-top:10px;">
         <div class="puzzle-title">💬 선생님을 돕는 방법은?</div>
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn-choice" onclick="ch6('A')">A. 슬며시 다가가 휴지를 건네고, 선생님 이야기를 들어준다.</button>
-          <button class="btn-choice" onclick="ch6('B')">B. 다른 어른(원장님 등)에게 선생님이 힘들어 보인다고 알린다.</button>
-          <button class="btn-choice" onclick="ch6('C')">C. 어른들의 일이니 내가 끼어들 일이 아니라고 생각하고 지나간다.</button>
+          <button class="btn-choice" onclick="ch7('A')">A. 슬며시 다가가 휴지를 건네고, 선생님 이야기를 들어준다.</button>
+          <button class="btn-choice" onclick="ch7('B')">B. 다른 어른(원장님 등)에게 선생님이 힘들어 보인다고 알린다.</button>
+          <button class="btn-choice" onclick="ch7('C')">C. 어른들의 일이니 내가 끼어들 일이 아니라고 생각하고 지나간다.</button>
         </div>
       </div>
     `,
@@ -513,7 +683,7 @@ function _loadTeacherRoom() {
       document.getElementById('alpha-reset-btn').addEventListener('click', () => {
         picked = [];
         refreshDisplay();
-        const msg = document.getElementById('p6-msg');
+        const msg = document.getElementById('p7-msg');
         if (msg) { msg.textContent = ''; msg.className = 'p6-feedback'; }
       });
 
@@ -523,7 +693,6 @@ function _loadTeacherRoom() {
           const letter = el.dataset.letter;
           picked.push(letter);
 
-          // 클릭 피드백
           el.classList.add('alpha-clicked');
           setTimeout(() => el.classList.remove('alpha-clicked'), 350);
 
@@ -531,12 +700,12 @@ function _loadTeacherRoom() {
 
           if (picked.length === 5) {
             const answer = picked.join('');
-            const msg = document.getElementById('p6-msg');
+            const msg = document.getElementById('p7-msg');
             if (answer === 'TRUST') {
               msg.className = 'p6-feedback correct';
               msg.textContent = '✅ TRUST (믿음)! 선생님께 가장 필요한 건 믿음이었구나.';
               setTimeout(() => {
-                document.getElementById('p6-choice').style.display = 'block';
+                document.getElementById('p7-choice').style.display = 'block';
               }, 600);
             } else {
               msg.className = 'p6-feedback wrong';
@@ -555,7 +724,7 @@ function _loadTeacherRoom() {
   );
 }
 
-window.ch6 = function(opt) {
+window.ch7 = function(opt) {
   const map = {
     'A': { s: [1, 0, 3], t: '제누가 조심스럽게 다가가 휴지를 건넸어. 선생님은 눈물을 닦으며 조용히 웃었어. 말 없는 위로가 더 따뜻할 때도 있어. (공동체성 대폭 상승)' },
     'B': { s: [2, 0, 1], t: '믿을 수 있는 다른 어른에게 상황을 알렸어. 함께 해결하는 것이 더 안전하다는 걸 제누는 알고 있었어. (신뢰도 상승)' },
@@ -568,24 +737,24 @@ window.ch6 = function(opt) {
 };
 
 
-// ===== 스테이지 7: 최종 선택 =====
-function renderStage7() {
+// ===== 스테이지 8: 최종 선택 (기존 7단계) =====
+function renderStage8() {
   showVnContent(
     `마침내, 최종 선택의 날이 밝았어.<br>하나와 해오름이 네게 조심스럽게 손을 내밀었어.<br>NC센터 창문으로 노을이 지고 있어. 제누, 지금 가장 솔직한 네 마음은?`,
     `
       <div class="puzzle-wrap">
         <div class="puzzle-title">🌅 나의 마지막 결심</div>
         <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-          <button class="btn-choice" onclick="ch7('A')">A. "상처받을지도 모르지만... 이 사람들을 한 번 믿어볼게."</button>
-          <button class="btn-choice" onclick="ch7('B')">B. "고마워요. 하지만 내 인생은 내가 혼자 개척할 거예요."</button>
-          <button class="btn-choice" onclick="ch7('C')">C. "부모는 아니어도... 서로 돕는 든든한 어른이 되어줄 수 있나요?"</button>
+          <button class="btn-choice" onclick="ch8('A')">A. "상처받을지도 모르지만... 이 사람들을 한 번 믿어볼게."</button>
+          <button class="btn-choice" onclick="ch8('B')">B. "고마워요. 하지만 내 인생은 내가 혼자 개척할 거예요."</button>
+          <button class="btn-choice" onclick="ch8('C')">C. "부모는 아니어도... 서로 돕는 든든한 어른이 되어줄 수 있나요?"</button>
         </div>
       </div>
     `
   );
 }
 
-window.ch7 = function(opt) {
+window.ch8 = function(opt) {
   if (opt === 'A') applyStats(3, 0, 0);
   else if (opt === 'B') applyStats(0, 3, 0);
   else applyStats(0, 0, 3);
