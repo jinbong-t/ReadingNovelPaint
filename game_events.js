@@ -844,7 +844,7 @@ function showEnding() {
 
       <!-- 3단계: 소감 작성 폼 (초기엔 숨김) -->
       <div id="ending-form-area" style="display:none; position:absolute; bottom:clamp(10px, 2vh, 20px); left:50%; transform:translateX(-50%); max-width:600px; width:92%; max-height:90vh; overflow-y:auto; text-align:center; padding:clamp(12px, 2vh, 16px); background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); border-radius:20px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 10px 40px rgba(0,0,0,0.4);">
-        <div style="font-size:1rem; font-weight:800; color:#fbbf24; margin-bottom:10px;">✏️ 오늘의 소감 4문답 (각 10글자 이상 진지하게)</div>
+        <div style="font-size:clamp(0.7rem, 3.8vw, 1rem); font-weight:800; color:#fbbf24; margin-bottom:10px; white-space:nowrap; letter-spacing:-0.5px;">✏️ 오늘의 소감 4문답 (각 10글자 이상 진지하게)</div>
         
         <div style="display:flex; gap:8px; margin-bottom:10px;">
           <input type="text" id="student-class" class="ending-input" placeholder="학번 (예: 3501)" style="flex:1; margin-bottom:0; font-size:0.8rem; padding:8px;">
