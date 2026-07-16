@@ -436,7 +436,7 @@ function renderStage6() {
         
         <div class="puzzle-scratch-container">
           <canvas id="scratch-canvas"></canvas>
-          <div class="scratch-under-content" id="scratch-under">
+          <div class="scratch-under-content" id="scratch-under" style="visibility:hidden;">
             <div class="math-puzzle-box">
               <table class="alpha-table" style="margin-bottom:4px;">
                 <tr class="l"><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td><td>K</td><td>L</td><td>M</td></tr>
@@ -494,6 +494,9 @@ function renderStage6() {
       }
       
       ctx.globalCompositeOperation = 'destination-out';
+      
+      // 페인트 칠이 끝난 후, 숨겨뒀던 퍼즐 내용 보이기
+      document.getElementById('scratch-under').style.visibility = 'visible';
       
       let isDrawing = false;
       let erasedPixels = 0;
